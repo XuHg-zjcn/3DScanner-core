@@ -29,8 +29,8 @@ typedef struct rads_range{
     int_range range;
 }rads_range;
 typedef struct H16_BL8{
-    xy<uint32_t> H16;
-    xy<uint32_t> BL8;
+    xy<uint16_t> H16;
+    xy<uint8_t> BL8;
 }H16_BL8;
 class point_u32: public xy<uint32_t>{
 public:

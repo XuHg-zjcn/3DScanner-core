@@ -36,8 +36,8 @@ inline void point_u32::add_delta(xy<int> &delta) {
 inline void point_u32::update_H16_BL8(H16_BL8 &upd) {
     upd.H16.x = x>>16U;
     upd.H16.y = y>>16U;
-    upd.BL8.x = (x>>8U)&0xffU;
-    upd.BL8.y = (y>>8U)&0xffU;
+    upd.BL8.x = x&0xff00U;
+    upd.BL8.y = y&0xff00U;
 }
 //双线性插值 output 24bit
 inline uint32_t Hough_core::BiLinear(uint64_t *pNear4, uint32_t x, uint32_t y) {
@@ -63,10 +63,26 @@ uint32_t Hough_core::line_sum(point_u32 start, xy<int> &delta, uint32_t N) {
     H16_BL8 xy_part;
     uint32_t sum_value=0;
     uint64_t near4[4]; //test: u64 fast than u32
+    uint8_t *pPixel;
+    uint8_t &x=xy_part.BL8.x;
+    uint8_t &y=xy_part.BL8.y;
+    uint8_t ix;
+    uint8_t iy;
     for(uint32_t i=0;i<N;i++) {
         start.update_H16_BL8(xy_part);
-        get_near4(xy_part.H16, near4);
-        sum_value+=BiLinear(near4, xy_part.BL8.x, xy_part.BL8.y);
+
+        pPixel = img_in->data;
+        pPixel += xy_part.H16.y * img_in->x + xy_part.H16.x;
+        ix = !xy_part.BL8.x;
+        iy = !xy_part.BL8.y;
+        sum_value += *pPixel * ix * iy;  //pixel(x,  y  )  img[y  ,x  ]
+        pPixel++;
+        sum_value += *pPixel *  x * iy;  //pixel(x+1,y  )  img[y  ,x+1]
+        pPixel+=img_in->x;
+        sum_value += *pPixel *  x *  y;  //pixel(x+1,y+1)  img[y+1,x+1]
+        pPixel--;
+        sum_value += *pPixel * ix *  y;  //pixel(x  ,y+1)  img[y+1,x  ]
+
         start.add_delta(delta);
     }
     sum_value = (sum_value/N)>>16U;
