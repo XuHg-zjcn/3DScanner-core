@@ -36,8 +36,8 @@ inline void point_u32::add_delta(xy<int> &delta) {
 inline void point_u32::update_H16_BL8(H16_BL8 &upd) {
     upd.H16.x = x>>16U;
     upd.H16.y = y>>16U;
-    upd.BL8.x = x&0xff00U;
-    upd.BL8.y = y&0xff00U;
+    upd.BL8.x = (x>>8U)&0xFFU;
+    upd.BL8.y = (y>>8U)&0xFFU;
 }
 //双线性插值 output 24bit
 inline uint32_t Hough_core::BiLinear(uint64_t *pNear4, uint32_t x, uint32_t y) {
@@ -59,7 +59,8 @@ inline void Hough_core::get_near4(xy<uint32_t> &pH16, uint64_t *pNear4) {
     //*(img_in->get(pH16.y+0,pH16.x+0)) = 0; //show area
 }
 //N<256
-uint32_t Hough_core::line_sum(point_u32 start, xy<int> &delta, uint32_t N) {
+uint32_t Hough_core::line_sum(point_u32 &start, xy<int> &delta, uint32_t N) {
+    point_u32 point = point_u32(start);
     H16_BL8 xy_part;
     uint32_t sum_value=0;
     uint64_t near4[4]; //test: u64 fast than u32
@@ -69,12 +70,11 @@ uint32_t Hough_core::line_sum(point_u32 start, xy<int> &delta, uint32_t N) {
     uint8_t ix;
     uint8_t iy;
     for(uint32_t i=0;i<N;i++) {
-        start.update_H16_BL8(xy_part);
+        point.update_H16_BL8(xy_part);
+        pPixel = img_in->get(xy_part.H16.x, xy_part.H16.y);
+        ix = ~x;
+        iy = ~y;
 
-        pPixel = img_in->data;
-        pPixel += xy_part.H16.y * img_in->x + xy_part.H16.x;
-        ix = !xy_part.BL8.x;
-        iy = !xy_part.BL8.y;
         sum_value += *pPixel * ix * iy;  //pixel(x,  y  )  img[y  ,x  ]
         pPixel++;
         sum_value += *pPixel *  x * iy;  //pixel(x+1,y  )  img[y  ,x+1]
@@ -83,10 +83,10 @@ uint32_t Hough_core::line_sum(point_u32 start, xy<int> &delta, uint32_t N) {
         pPixel--;
         sum_value += *pPixel * ix *  y;  //pixel(x  ,y+1)  img[y+1,x  ]
 
-        start.add_delta(delta);
+        point.add_delta(delta);
     }
     sum_value = (sum_value/N)>>16U;
-    //sum_value = 0;
+    //sum_value = 0x7f;
     //assert(sum_value<=0xff); //show area
     return sum_value;
 }
@@ -103,7 +103,7 @@ void Hough_core::lines_search() {
         delta_line.y = delta_point.x;
 
         point.copy_from_old(paras.in_X0);
-        uint8_t *ptr = img_out->get(i,0);
+        uint8_t *ptr = img_out->get(i, paras.out_area.x.a);
         for(int j=paras.out_area.x.a; j<paras.out_area.x.b; j++) {
             *ptr++ = line_sum(point, delta_point, paras.N_length);
             point.add_delta(delta_line);

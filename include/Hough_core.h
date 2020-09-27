@@ -70,6 +70,7 @@ public:
     inline T* get(uint32_t i, uint32_t j) {
         return data + (x*i) + j;
     }
+    //T* get = [i,j]{ return data+(x*i)+j; };
 };
 typedef struct range_u32{
     uint32_t a;
@@ -96,7 +97,7 @@ class Hough_core
     protected:
         inline uint32_t BiLinear(uint64_t *pNear4, uint32_t x, uint32_t y);
         inline void     get_near4(xy<uint32_t> &pH16, uint64_t *pNear4);
-        uint32_t line_sum(point_u32 start, xy<int> &delta, uint32_t N);
+        uint32_t line_sum(point_u32 &start, xy<int> &delta, uint32_t N);
 
     public:
         thread_para paras;

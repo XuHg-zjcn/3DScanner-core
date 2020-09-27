@@ -28,8 +28,8 @@ int main(int argc, char *argv[])
     m_para.size_from_OpenCV_Mat(gray, out);
     m_para.start.set_xy16(128, 128);
     m_para.rads={start:0, step:pi/50};
-    m_para.N_length=100;
-    m_para.N_thread=2;
+    m_para.N_length=50;
+    m_para.N_thread=1;
     mHough = new Hough(&m_para);
 
     clock_gettime(CLOCK_REALTIME, &ts0);
