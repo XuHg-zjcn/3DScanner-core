@@ -4,12 +4,15 @@
 #include <opencv2/highgui/highgui_c.h>
 #include <opencv2/imgcodecs/legacy/constants_c.h>
 #include <ctime>
+#include <iostream>
 #include "Hough.h"
+#include "Hough_core.h"
 #define pi 3.1415926535
 using namespace std;
 using namespace cv;
 Hough *mHough;
 MT_para m_para;
+timespec ts0{}, ts1{};
 int main(int argc, char *argv[])
 {
     vector<Mat>Images(3);
@@ -18,21 +21,28 @@ int main(int argc, char *argv[])
     Mat out;
     if(img_color.empty())
        return -1;
+    gray.create(img_color.size(), CV_8UC1);
     cvtColor(img_color, gray, CV_RGB2GRAY);
 
-    out.create(100, 100, CV_8UC1);
+    out.create(50, 50, CV_8UC1);
     m_para.size_from_OpenCV_Mat(gray, out);
-    m_para.start={100,100};
-    m_para.rads={0,pi/100};
-    m_para.N_length=50;
+    m_para.start.set_xy16(128, 128);
+    m_para.rads={start:0, step:pi/50};
+    m_para.N_length=100;
     m_para.N_thread=2;
     mHough = new Hough(&m_para);
-    mHough->update(img_color.ptr(), out.ptr());
+
+    clock_gettime(CLOCK_REALTIME, &ts0);
+    mHough->update(gray.ptr(), out.ptr());
     mHough->waitOK();
+    clock_gettime(CLOCK_REALTIME, &ts1);
+    cout<< (ts1.tv_nsec - ts0.tv_nsec)/1000 << "us" <<endl;
+
     Images[0] = img_color;
     Images[1] = gray;
     Images[2] = out;
     imshow("out", out);
+    imshow("in", gray);
     waitKey(0);
     return 0;
 }

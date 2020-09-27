@@ -34,8 +34,10 @@ typedef struct H16_BL8{
 }H16_BL8;
 class point_u32: public xy<uint32_t>{
 public:
-    point_u32(uint32_t set_x, uint32_t set_y);
+    point_u32();
     point_u32(point_u32 &old);
+    point_u32(uint32_t set_x, uint32_t set_y);
+    void set_xy16(uint32_t x, uint32_t y);
     inline void add_delta(xy<int> &delta);
     inline void update_H16_BL8(H16_BL8 &upd);
 };
@@ -92,11 +94,11 @@ class Hough_core
         void     lines_search();
 
     protected:
-        uint32_t BiLinear(uint64_t *pNear4, uint32_t x, uint32_t y);
-        void     get_near4(xy<uint32_t> *pH16, uint64_t *pNear4);
-        uint32_t line_sum(point_u32 &start, xy<int> &delta, uint32_t N);
+        inline uint32_t BiLinear(uint64_t *pNear4, uint32_t x, uint32_t y);
+        inline void     get_near4(xy<uint32_t> &pH16, uint64_t *pNear4);
+        uint32_t line_sum(point_u32 start, xy<int> &delta, uint32_t N);
 
-    private:
+    public:
         thread_para paras;
         array2d<uint8_t> *img_in;
         array2d<uint8_t> *img_out;

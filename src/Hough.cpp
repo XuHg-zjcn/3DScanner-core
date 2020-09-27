@@ -46,11 +46,13 @@ void Hough::init(MT_para *paras) {
     pthread_attr_setstacksize(&attr, stacksize);
 
     float delta_rads = rads.step * out_size.x;
-    assert(out_size.x % n_thread == 0);
+    assert(out_size.y % n_thread == 0);
     rows_per_thread = out_size.y / n_thread;
-
     thread_para T_para;
     T_para.in_X0.copy_from_old(paras->start);
+
+    cout<<(paras->start.x>>16)<<endl;
+    cout<<(paras->start.y>>16)<<endl;
     T_para.out_area.x.a = 0;
     T_para.out_area.x.b = out_size.x;
     T_para.out_area.y.a = 0;
@@ -63,6 +65,7 @@ void Hough::init(MT_para *paras) {
         pthread_create(threads, &attr, thread_func, thread_obj);
         T_para.out_area.y.a += rows_per_thread; //a=range_per_thread*(N_thread)
         T_para.out_area.y.b += rows_per_thread; //b=range_per_thread*(N_thread+1)
+        T_para.rads.start += T_para.rads.step*rows_per_thread;
         threads++;
         thread_obj++;
     }
@@ -95,5 +98,7 @@ void MT_para::size_from_OpenCV_Mat(Mat &mat_in, Mat &mat_out)
 {
     in_size.x = mat_in.cols;
     in_size.y = mat_in.rows;
+    out_size.x = mat_out.cols;
+    out_size.y = mat_out.rows;
 }
 
