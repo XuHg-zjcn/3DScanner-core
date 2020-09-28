@@ -32,10 +32,10 @@ int main(int argc, char *argv[])
     m_para.N_thread=1;
     mHough = new Hough(&m_para);
 
-    clock_gettime(CLOCK_REALTIME, &ts0);
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts0);
     mHough->update(gray.ptr(), out.ptr());
     mHough->waitOK();
-    clock_gettime(CLOCK_REALTIME, &ts1);
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts1);
     cout<< (ts1.tv_nsec - ts0.tv_nsec)/1000 << "us" <<endl;
 
     Images[0] = img_color;
