@@ -59,11 +59,10 @@ inline void Hough_core::get_near4(xy<uint32_t> &pH16, uint64_t *pNear4) {
     //*(img_in->get(pH16.y+0,pH16.x+0)) = 0; //show area
 }
 //N<256
-uint32_t Hough_core::line_sum(point_u32 &start, xy<int> &delta, uint32_t N) {
+inline uint32_t Hough_core::line_sum(point_u32 &start, xy<int> &delta, uint32_t N) {
     point_u32 point = point_u32(start);
     H16_BL8 xy_part;
     uint32_t sum_value=0;
-    uint64_t near4[4]; //test: u64 fast than u32
     uint8_t *pPixel;
     uint8_t &x=xy_part.BL8.x;
     uint8_t &y=xy_part.BL8.y;
@@ -92,11 +91,13 @@ uint32_t Hough_core::line_sum(point_u32 &start, xy<int> &delta, uint32_t N) {
 }
 //线程函数
 void Hough_core::lines_search() {
+    timespec ts0{}, ts1{};
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts0);
     float rad = paras.rads.start;           //i为0时的rad
     point_u32 point = point_u32(0U, 0U);      //无用
     xy<int> delta_point{0,0};               //线上点的间距
     xy<int> delta_line{0,0};                //平行线的间距
-    for(int i=paras.out_area.y.a; i<paras.out_area.y.b; i++) {
+    for(uint32_t i=paras.out_area.y.a; i<paras.out_area.y.b; i++) {
         delta_point.x = (int)(cos(rad)*0x10000);
         delta_point.y = (int)(sin(rad)*0x10000);
         delta_line.x = -delta_point.y;
@@ -104,11 +105,14 @@ void Hough_core::lines_search() {
 
         point.copy_from_old(paras.in_X0);
         uint8_t *ptr = img_out->get(i, paras.out_area.x.a);
-        for(int j=paras.out_area.x.a; j<paras.out_area.x.b; j++) {
+        for(uint32_t j=paras.out_area.x.a; j<paras.out_area.x.b; j++) {
             *ptr++ = line_sum(point, delta_point, paras.N_length);
             point.add_delta(delta_line);
         }
 
         rad += paras.rads.step;
     }
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts1);
+    cout<< (ts1.tv_nsec - ts0.tv_nsec)/1000 << "us" <<endl;
 }
+

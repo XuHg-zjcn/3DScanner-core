@@ -36,13 +36,13 @@ int main(int argc, char *argv[])
     mHough->update(gray.ptr(), out.ptr());
     mHough->waitOK();
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts1);
-    cout<< (ts1.tv_nsec - ts0.tv_nsec)/1000 << "us" <<endl;
+    //cout<< (ts1.tv_nsec - ts0.tv_nsec)/1000 << "us" <<endl;
 
     Images[0] = img_color;
     Images[1] = gray;
     Images[2] = out;
-    imshow("out", out);
-    imshow("in", gray);
+    //imshow("out", out);
+    //imshow("in", gray);
     waitKey(0);
     return 0;
 }

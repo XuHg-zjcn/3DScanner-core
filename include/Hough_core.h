@@ -97,7 +97,7 @@ class Hough_core
     protected:
         inline uint32_t BiLinear(uint64_t *pNear4, uint32_t x, uint32_t y);
         inline void     get_near4(xy<uint32_t> &pH16, uint64_t *pNear4);
-        uint32_t line_sum(point_u32 &start, xy<int> &delta, uint32_t N);
+        inline uint32_t line_sum(point_u32 &start, xy<int> &delta, uint32_t N);
 
     public:
         thread_para paras;

@@ -35,24 +35,18 @@ void Hough::init(MT_para *paras) {
     size_t stacksize;                  //修改栈大小=4kB
 
     range_float &rads = paras->rads;
-    xy<uint32_t> &in_size = paras->in_size;
     xy<uint32_t> &out_size = paras->out_size;
-    uint32_t &N_lines = out_size.x;
-    uint32_t &N_rads = out_size.y;
 
     pthread_attr_init(&attr);
     pthread_attr_getstacksize(&attr, &stacksize);
     stacksize = 4000; //4KB
     pthread_attr_setstacksize(&attr, stacksize);
 
-    float delta_rads = rads.step * out_size.x;
     assert(out_size.y % n_thread == 0);
     rows_per_thread = out_size.y / n_thread;
     thread_para T_para;
     T_para.in_X0.copy_from_old(paras->start);
 
-    cout<<(paras->start.x>>16)<<endl;
-    cout<<(paras->start.y>>16)<<endl;
     T_para.out_area.x.a = 0;
     T_para.out_area.x.b = out_size.x;
     T_para.out_area.y.a = 0;
@@ -60,7 +54,7 @@ void Hough::init(MT_para *paras) {
     T_para.rads.start = rads.start;
     T_para.rads.step = rads.step;
     T_para.N_length = paras->N_length;
-    for(int i=0;i<n_thread;i++) {
+    for(uint32_t i=0;i<n_thread;i++) {
         thread_obj = new Hough_core(&T_para, &img_in, &img_out);
         pthread_create(threads, &attr, thread_func, thread_obj);
         T_para.out_area.y.a += rows_per_thread; //a=range_per_thread*(N_thread)
@@ -84,13 +78,13 @@ void* Hough::thread_func(void* args) {
 void Hough::update(uint8_t *pIn, uint8_t *pOut) {
     img_in.set_ptr(pIn);
     img_out.set_ptr(pOut);
-    for(int i=0;i<n_thread;i++){
+    for(uint32_t i=0;i<n_thread;i++){
         sem_post(&sem0);
     }
 }
 
 void Hough::waitOK() {
-    for(int i=0;i<n_thread;i++)
+    for(uint32_t i=0;i<n_thread;i++)
         sem_wait(&sem1);
 }
 
