@@ -8,6 +8,7 @@
 #include "Hough.h"
 #include "Hough_core.h"
 #define pi 3.1415926535
+#include "optflow_FFT.h"
 using namespace std;
 using namespace cv;
 Hough *mHough;
@@ -15,10 +16,11 @@ MT_para m_para;
 timespec ts0{}, ts1{};
 int main(int argc, char *argv[])
 {
-    vector<Mat>Images(3);
     Mat img_color = imread("lena.jpg", CV_LOAD_IMAGE_COLOR);
     Mat gray;
+    Rect rect;
     Mat out;
+    Mat show;
     if(img_color.empty())
        return -1;
     gray.create(img_color.size(), CV_8UC1);
@@ -38,11 +40,16 @@ int main(int argc, char *argv[])
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts1);
     //cout<< (ts1.tv_nsec - ts0.tv_nsec)/1000 << "us" <<endl;
 
-    Images[0] = img_color;
-    Images[1] = gray;
-    Images[2] = out;
-    //imshow("out", out);
-    //imshow("in", gray);
+    show.create(64, 64, CV_8UC1);
+    optflow_FFT *offt = new optflow_FFT(64);
+    offt->fill_data(gray, 40, 130);
+    offt->run(0);
+    offt->fill_data(gray, 45, 133);
+    offt->run(1);
+    offt->calc_delta();
+    offt->copy_result(show.ptr());
+    imshow("show", show);
+
     waitKey(0);
     return 0;
 }
