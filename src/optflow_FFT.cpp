@@ -86,25 +86,24 @@ void optflow_FFT::calc_delta()
             mul[33*i+j][1] = sin(v);
         }
     }
-    fftw_execute(p_ifft);
 }
 
-void optflow_FFT::copy_result(uint8_t* p)
+void optflow_FFT::copy_result(uint8_t* p1, uint8_t* p2)
 {
     double abs_v;
-    for(uint32_t i=0;i<64*64;i++) {
-        abs_v = ifft[i]/20;
-        abs_v += 32;
-        cout<<abs_v<<endl;
-        abs_v = abs_v<0   ?   0 : abs_v;
-        abs_v = abs_v>255 ? 255 : abs_v;
-        *p++ = (uint8_t)abs_v;
-    }
-    /*for(uint32_t i=0;i<64*33;i++) {
+    for(uint32_t i=0;i<64*33;i++) {
         abs_v = mul[i][0];
         abs_v = abs_v*128 + 128;
         abs_v = abs_v<0   ?   0 : abs_v;
         abs_v = abs_v>255 ? 255 : abs_v;
-        *p++ = (uint8_t)abs_v;
-    }*/
+        *p1++ = (uint8_t)abs_v;
+    }
+    fftw_execute(p_ifft);
+    for(uint32_t i=0;i<64*64;i++) {
+        abs_v = ifft[i]/20;
+        abs_v += 32;
+        abs_v = abs_v<0   ?   0 : abs_v;
+        abs_v = abs_v>255 ? 255 : abs_v;
+        *p2++ = (uint8_t)abs_v;
+    }
 }

@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
     Mat gray;
     Rect rect;
     Mat out;
-    Mat show;
+    Mat show_wave, show_ifft;
     Mat scaleUp;
     if(img_color.empty())
        return -1;
@@ -41,16 +41,18 @@ int main(int argc, char *argv[])
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts1);
     //cout<< (ts1.tv_nsec - ts0.tv_nsec)/1000 << "us" <<endl;
 
-    show.create(64, 64, CV_8UC1);
+    show_wave.create(64, 33, CV_8UC1);
+    show_ifft.create(64, 64, CV_8UC1);
     optflow_FFT *offt = new optflow_FFT(64);
     offt->fill_data(gray, 40, 130);
     offt->run(0);
     offt->fill_data(gray, 45, 133);
     offt->run(1);
     offt->calc_delta();
-    offt->copy_result(show.ptr());
-    resize(show, scaleUp, Size(), 4.0, 4.0, INTER_NEAREST);
-    imshow("show", scaleUp);
+    offt->copy_result(show_wave.ptr(), show_ifft.ptr());
+    resize(show_ifft, scaleUp, Size(), 4.0, 4.0, INTER_NEAREST);
+    imshow("ifft_4x", scaleUp);
+    imshow("wave", show_wave);
 
     waitKey(0);
     return 0;
