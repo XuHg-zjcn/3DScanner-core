@@ -5,6 +5,7 @@
 #include <iostream>
 #include <cmath>
 using namespace std;
+#define pi 3.1415926535
 optflow_FFT::optflow_FFT(uint32_t n)
 {
     //ctor
@@ -70,13 +71,20 @@ void optflow_FFT::fill_data(Mat &mat_in, uint32_t x0, uint32_t y0)
 
 void optflow_FFT::calc_delta()
 {
-    double mul_real, mul_imag, sqrt2;
-    for(uint32_t i=0;i<64*33;i++) {
+    double mul_real, mul_imag, sqrt2, v;
+    for(int i=0;i<64*33;i++) {
         mul_real = out1[i][0]*out2[i][0] + out1[i][1]*out2[i][1];
         mul_imag =-out1[i][0]*out2[i][1] + out1[i][1]*out2[i][0];
         sqrt2 = sqrt(mul_real*mul_real + mul_imag*mul_imag);
         mul[i][0] = mul_real/sqrt2;
         mul[i][1] = mul_imag/sqrt2;
+    }
+    for(int i=0;i<64;i++) {
+        for(int j=0;j<33;j++) {
+            v = (double)(i+2*j)/64*2*pi* 3.5;
+            mul[33*i+j][0] = cos(v);
+            mul[33*i+j][1] = sin(v);
+        }
     }
     fftw_execute(p_ifft);
 }
@@ -94,10 +102,9 @@ void optflow_FFT::copy_result(uint8_t* p)
     }
     /*for(uint32_t i=0;i<64*33;i++) {
         abs_v = mul[i][0];
-        abs_v = abs_v/4 + 128;
+        abs_v = abs_v*128 + 128;
         abs_v = abs_v<0   ?   0 : abs_v;
         abs_v = abs_v>255 ? 255 : abs_v;
-        cout<<abs_v<<endl;
         *p++ = (uint8_t)abs_v;
     }*/
 }

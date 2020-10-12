@@ -21,6 +21,7 @@ int main(int argc, char *argv[])
     Rect rect;
     Mat out;
     Mat show;
+    Mat scaleUp;
     if(img_color.empty())
        return -1;
     gray.create(img_color.size(), CV_8UC1);
@@ -48,7 +49,8 @@ int main(int argc, char *argv[])
     offt->run(1);
     offt->calc_delta();
     offt->copy_result(show.ptr());
-    imshow("show", show);
+    resize(show, scaleUp, Size(), 4.0, 4.0, INTER_NEAREST);
+    imshow("show", scaleUp);
 
     waitKey(0);
     return 0;
