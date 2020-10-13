@@ -88,22 +88,64 @@ void optflow_FFT::calc_delta()
     }
 }
 
+void optflow_FFT::xsum(double dx, double dy, fftw_complex &ret)
+{
+    double v;//, ret=0;
+    ret[0]=0;
+    ret[1]=0;
+    for(int i=0;i<64;i++) {
+        for(int j=0;j<33;j++) {
+            v = (double)(i*dx+j*dy)/64*2*pi;
+            ret[0]+=mul[33*i+j][0]*cos(v) - mul[33*i+j][1]*sin(v);
+            ret[1]+=mul[33*i+j][0]*sin(v) + mul[33*i+j][1]*cos(v);
+        }
+    }
+    ret[0]/=33*64;
+    ret[1]/=33*64;
+    ret[0]= sqrt(ret[0]*ret[0] + ret[1]*ret[1]);
+}
+
 void optflow_FFT::copy_result(uint8_t* p1, uint8_t* p2)
 {
-    double abs_v;
-    for(uint32_t i=0;i<64*33;i++) {
-        abs_v = mul[i][0];
-        abs_v = abs_v*128 + 128;
-        abs_v = abs_v<0   ?   0 : abs_v;
-        abs_v = abs_v>255 ? 255 : abs_v;
-        *p1++ = (uint8_t)abs_v;
+    double v,vmax=0,vmin=0;
+    fftw_complex *vars=(fftw_complex*)malloc(sizeof(fftw_complex)*64*64);
+    fftw_complex *vars1=vars;
+    for(int i=0;i<64*33;i++) {
+        v = mul[i][0];
+        v = v*128 + 128;
+        v = v<0   ?   0 : v;
+        v = v>255 ? 255 : v;
+        *p1++ = (uint8_t)v;
     }
-    fftw_execute(p_ifft);
-    for(uint32_t i=0;i<64*64;i++) {
+    /*fftw_execute(p_ifft);
+    for(int i=0;i<64*64;i++) {
         abs_v = ifft[i]/20;
         abs_v += 32;
         abs_v = abs_v<0   ?   0 : abs_v;
         abs_v = abs_v>255 ? 255 : abs_v;
         *p2++ = (uint8_t)abs_v;
+    }*/
+    vars1=vars;
+    for(int i=-32;i<32;i++) {
+        for(int j=-32;j<32;j++) {
+            xsum(i/5.0, j/5.0, *vars1++);
+        }
     }
+    vars1=vars;
+    for(int i=0;i<64*64;i++) {
+        v = (*vars1++)[0];
+        if(v<vmin)
+            vmin=v;
+        else if(v>vmax)
+            vmax=v;
+    }
+    vars1=vars;
+    for(int i=0;i<64*64;i++) {
+        v = (*vars1++)[0];
+        v = (v-vmin)/(vmax-vmin)*255;
+        v = v<0   ?   0 : v;
+        v = v>255 ? 255 : v;
+        *p2++ = (uint8_t)v;
+    }
+    free(vars);
 }

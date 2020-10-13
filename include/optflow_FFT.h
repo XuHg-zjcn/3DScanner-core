@@ -12,6 +12,7 @@ class optflow_FFT
         void run(uint32_t n);
         void fill_data(Mat &in, uint32_t x0, uint32_t y0);
         void calc_delta();
+        void xsum(double dx, double dy, fftw_complex &ret);
         void copy_result(uint8_t* p1, uint8_t* p2);
 
     protected:
