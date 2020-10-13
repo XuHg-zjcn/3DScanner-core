@@ -3,9 +3,9 @@
 #include <unistd.h>
 #include <time.h>
 #include <iostream>
+#define _USE_MATH_DEFINES
 #include <cmath>
 using namespace std;
-#define pi 3.1415926535
 optflow_FFT::optflow_FFT(uint32_t n)
 {
     //ctor
@@ -79,13 +79,13 @@ void optflow_FFT::calc_delta()
         mul[i][0] = mul_real/sqrt2;
         mul[i][1] = mul_imag/sqrt2;
     }
-    for(int i=0;i<64;i++) {
+    /*for(int i=0;i<64;i++) {
         for(int j=0;j<33;j++) {
-            v = (double)(i+2*j)/64*2*pi* 3.5;
+            v = (double)(i+2*j)/64*2*M_PI* 3.5;
             mul[33*i+j][0] = cos(v);
             mul[33*i+j][1] = sin(v);
         }
-    }
+    }*/
 }
 
 void optflow_FFT::xsum(double dx, double dy, fftw_complex &ret)
@@ -95,9 +95,9 @@ void optflow_FFT::xsum(double dx, double dy, fftw_complex &ret)
     ret[1]=0;
     for(int i=0;i<64;i++) {
         for(int j=0;j<33;j++) {
-            v = (double)(i*dx+j*dy)/64*2*pi;
-            ret[0]+=mul[33*i+j][0]*cos(v) - mul[33*i+j][1]*sin(v);
-            ret[1]+=mul[33*i+j][0]*sin(v) + mul[33*i+j][1]*cos(v);
+            v = (double)(i*dx+j*dy)/64*2*M_PI;
+            ret[0] += mul[33*i+j][0]*cos(v) - mul[33*i+j][1]*sin(v);
+            ret[1] += mul[33*i+j][0]*sin(v) + mul[33*i+j][1]*cos(v);
         }
     }
     ret[0]/=33*64;
