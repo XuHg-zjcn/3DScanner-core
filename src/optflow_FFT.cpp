@@ -1,4 +1,5 @@
 #include "optflow_FFT.h"
+#include <opencv2/core/core.hpp>
 #include <fftw3.h>
 #include <unistd.h>
 #include <time.h>
@@ -79,13 +80,25 @@ void optflow_FFT::calc_delta()
         mul[i][0] = mul_real/sqrt2;
         mul[i][1] = mul_imag/sqrt2;
     }
-    /*for(int i=0;i<64;i++) {
-        for(int j=0;j<33;j++) {
-            v = (double)(i+2*j)/64*2*M_PI* 3.5;
-            mul[33*i+j][0] = cos(v);
-            mul[33*i+j][1] = sin(v);
+}
+
+//Signal window wide
+double optflow_FFT::get_ifft_SNR(int w)
+{
+    double mAll = 64.0;      //mean all
+    double mWin = 0;         //mean in window
+    double Signal, Noise;
+    for(int i=0;i<w;i++) {
+        for(int j=0;j<w;j++) {
+            mWin+=ifft[i*n+j];
         }
-    }*/
+    }
+    mWin /= w*w;
+    //mWin = Signal+w*Noise;
+    //mAll = Signal+n*Noise;
+    Signal = (n*mWin - w*mAll)/(n-w);
+    Noise  = (mAll - mWin)/(n-w);
+    return Signal/Noise;
 }
 
 void optflow_FFT::xsum(double dx, double dy, fftw_complex &ret)
@@ -105,47 +118,71 @@ void optflow_FFT::xsum(double dx, double dy, fftw_complex &ret)
     ret[0]= sqrt(ret[0]*ret[0] + ret[1]*ret[1]);
 }
 
-void optflow_FFT::copy_result(uint8_t* p1, uint8_t* p2)
+void optflow_FFT::complex_to_u8(fftw_complex *pIn, uint8_t *pOut, int len)
 {
-    double v,vmax=0,vmin=0;
-    fftw_complex *vars=(fftw_complex*)malloc(sizeof(fftw_complex)*64*64);
-    fftw_complex *vars1=vars;
-    for(int i=0;i<64*33;i++) {
-        v = mul[i][0];
-        v = v*128 + 128;
-        v = v<0   ?   0 : v;
-        v = v>255 ? 255 : v;
-        *p1++ = (uint8_t)v;
-    }
-    /*fftw_execute(p_ifft);
-    for(int i=0;i<64*64;i++) {
-        abs_v = ifft[i]/20;
-        abs_v += 32;
-        abs_v = abs_v<0   ?   0 : abs_v;
-        abs_v = abs_v>255 ? 255 : abs_v;
-        *p2++ = (uint8_t)abs_v;
-    }*/
-    vars1=vars;
-    for(int i=-32;i<32;i++) {
-        for(int j=-32;j<32;j++) {
-            xsum(i/5.0, j/5.0, *vars1++);
-        }
-    }
-    vars1=vars;
-    for(int i=0;i<64*64;i++) {
-        v = (*vars1++)[0];
+    double v,vmax,vmin;
+    fftw_complex *pIn1=pIn;
+    for(int i=0;i<len;i++) {
+        v = (*pIn1++)[0];
         if(v<vmin)
             vmin=v;
         else if(v>vmax)
             vmax=v;
     }
-    vars1=vars;
-    for(int i=0;i<64*64;i++) {
-        v = (*vars1++)[0];
+    pIn1=pIn;
+    for(int i=0;i<len;i++) {
+        v = (*pIn1++)[0];
         v = (v-vmin)/(vmax-vmin)*255;
         v = v<0   ?   0 : v;
         v = v>255 ? 255 : v;
-        *p2++ = (uint8_t)v;
+        *pOut++ = (uint8_t)v;
     }
+}
+
+void optflow_FFT::double_to_u8(double *pIn, uint8_t *pOut, int len)
+{
+    double v,vmax,vmin;
+    double *pIn1=pIn;
+    for(int i=0;i<len;i++) {
+        v = *pIn1++;
+        if(v<vmin)
+            vmin=v;
+        else if(v>vmax)
+            vmax=v;
+    }
+    pIn1=pIn;
+    for(int i=0;i<len;i++) {
+        v = *pIn1++;
+        v = (v-vmin)/(vmax-vmin)*255;
+        v = v<0   ?   0 : v;
+        v = v>255 ? 255 : v;
+        *pOut++ = (uint8_t)v;
+    }
+}
+
+void optflow_FFT::WT(Mat *out, double div)
+{
+    int w=out->cols;
+    fftw_complex *vars=(fftw_complex*)malloc(sizeof(fftw_complex)*w*w);
+    fftw_complex *vars1=vars;
+    for(int i=-w/2;i<w/2;i++) {  //i,j = range(-width/2, width/2)
+        for(int j=-w/2;j<w/2;j++) {
+            xsum(i/div, j/div, *vars1++);
+        }
+    }
+    complex_to_u8(vars, out->ptr(), w*w);
     free(vars);
+}
+
+//require mul
+//call after calc_delta
+void optflow_FFT::out_ifft(Mat *out)
+{
+    fftw_execute(p_ifft);
+    double_to_u8(ifft, out->ptr(), n*n);
+}
+
+void optflow_FFT::copy_mul(Mat *out)
+{
+    complex_to_u8(mul, out->ptr(), n*(n+1)/2);
 }

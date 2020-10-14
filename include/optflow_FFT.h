@@ -12,8 +12,13 @@ class optflow_FFT
         void run(uint32_t n);
         void fill_data(Mat &in, uint32_t x0, uint32_t y0);
         void calc_delta();
+        double get_ifft_SNR(int window);
         void xsum(double dx, double dy, fftw_complex &ret);
-        void copy_result(uint8_t* p1, uint8_t* p2);
+        void complex_to_u8(fftw_complex *pIn, uint8_t *pOut, int len);
+        void double_to_u8(double *pIn, uint8_t *pOut, int len);
+        void WT(Mat *out, double div);
+        void out_ifft(Mat *out);
+        void copy_mul(Mat *out);
 
     protected:
         int save();

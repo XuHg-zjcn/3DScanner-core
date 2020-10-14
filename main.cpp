@@ -49,7 +49,10 @@ int main(int argc, char *argv[])
     offt->fill_data(gray, 45, 133);
     offt->run(1);
     offt->calc_delta();
-    offt->copy_result(show_wave.ptr(), show_ifft.ptr());
+    offt->copy_mul(&show_wave);
+    offt->out_ifft(&show_ifft);
+    cout<<offt->get_ifft_SNR(8)<<endl;
+    //offt->copy_result(show_wave.ptr(), show_ifft.ptr());
     resize(show_ifft, scaleUp, Size(), 4.0, 4.0, INTER_NEAREST);
     imshow("ifft_4x", scaleUp);
     imshow("wave", show_wave);
