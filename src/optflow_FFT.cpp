@@ -85,15 +85,14 @@ void optflow_FFT::calc_delta()
 //Signal window wide
 double optflow_FFT::get_ifft_SNR(int w)
 {
-    double mAll = 64.0;      //mean all
-    double mWin = 0;         //mean in window
+    double mAll = 64*64*64*64;//mean all
+    double mWin = 0;          //mean in window
     double Signal, Noise;
     for(int i=0;i<w;i++) {
         for(int j=0;j<w;j++) {
-            mWin+=ifft[i*n+j];
+            mWin+=ifft[i*n+j]*ifft[i*n+j];
         }
     }
-    mWin /= w*w;
     //mWin = Signal+w*Noise;
     //mAll = Signal+n*Noise;
     Signal = (n*mWin - w*mAll)/(n-w);
