@@ -7,7 +7,7 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 using namespace std;
-optflow_FFT::optflow_FFT(uint32_t n)
+optflow_FFT::optflow_FFT(int n)
 {
     //ctor
     this->n = n;
@@ -37,7 +37,7 @@ optflow_FFT::~optflow_FFT()
     fftw_destroy_plan(p2);
 }
 
-void optflow_FFT::run(uint32_t n)
+void optflow_FFT::run(int n)
 {
     if(n==0)
         fftw_execute(p1);
@@ -58,13 +58,13 @@ int optflow_FFT::save()
     return 0;
 }
 
-void optflow_FFT::fill_data(Mat &mat_in, uint32_t x0, uint32_t y0)
+void optflow_FFT::fill_data(Mat &mat_in, int x0, int y0)
 {
     uint8_t *ptr_row;
     double *ptr_db=crop_db;
-    for(uint32_t i=y0;i<y0+n;i++) {
+    for(int i=y0;i<y0+n;i++) {
         ptr_row = mat_in.ptr(i, x0);
-        for(uint32_t j=0;j<n;j++) {
+        for(int j=0;j<n;j++) {
             *ptr_db++=*ptr_row++;
         }
     }
