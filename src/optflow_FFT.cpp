@@ -73,7 +73,7 @@ void optflow_FFT::fill_data(Mat &mat_in, uint32_t x0, uint32_t y0)
 void optflow_FFT::calc_delta()
 {
     double mul_real, mul_imag, sqrt2, v;
-    for(int i=0;i<64*33;i++) {
+    for(int i=0;i<n*(n/2+1);i++) {
         mul_real = out1[i][0]*out2[i][0] + out1[i][1]*out2[i][1];
         mul_imag =-out1[i][0]*out2[i][1] + out1[i][1]*out2[i][0];
         sqrt2 = sqrt(mul_real*mul_real + mul_imag*mul_imag);
@@ -88,7 +88,7 @@ void optflow_FFT::calc_delta()
 //@para info: output info
 void optflow_FFT::get_ifft_info(int w, double most, int SumNtop, ifft_info *info)
 {
-    double mAll = 64*64*64*64;//mean all
+    double mAll = n*n*n*n;//mean all
     double mWin = 0;          //mean in window
     double Signal, Noise;
     double *wsort = new double[w*w];
@@ -126,18 +126,19 @@ void optflow_FFT::get_ifft_info(int w, double most, int SumNtop, ifft_info *info
 
 void optflow_FFT::xsum(double dx, double dy, fftw_complex &ret)
 {
+    int n21=n/2+1;
     double v;//, ret=0;
     ret[0]=0;
     ret[1]=0;
-    for(int i=0;i<64;i++) {
-        for(int j=0;j<33;j++) {
+    for(int i=0;i<n21;i++) {
+        for(int j=0;j<n21;j++) {
             v = (double)(i*dx+j*dy)/64*2*M_PI;
-            ret[0] += mul[33*i+j][0]*cos(v) - mul[33*i+j][1]*sin(v);
-            ret[1] += mul[33*i+j][0]*sin(v) + mul[33*i+j][1]*cos(v);
+            ret[0] += mul[n21*i+j][0]*cos(v) - mul[n21*i+j][1]*sin(v);
+            ret[1] += mul[n21*i+j][0]*sin(v) + mul[n21*i+j][1]*cos(v);
         }
     }
-    ret[0]/=33*64;
-    ret[1]/=33*64;
+    ret[0]/=n21*n21;
+    ret[1]/=n21*n21;
     ret[0]= sqrt(ret[0]*ret[0] + ret[1]*ret[1]);
 }
 
