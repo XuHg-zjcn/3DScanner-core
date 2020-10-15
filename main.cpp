@@ -13,6 +13,7 @@ using namespace std;
 using namespace cv;
 
 void runHough(Mat &gray, Mat &out);
+void runFFT(Mat &gray, Mat &show_wave, Mat &show_ifft);
 
 int main(int argc, char *argv[])
 {
@@ -22,7 +23,6 @@ int main(int argc, char *argv[])
     Mat out;
     Mat show_wave, show_ifft;
     Mat scaleUp;
-    auto *info = new ifft_info;
     if(img_color.empty())
        return -1;
     gray.create(img_color.size(), CV_8UC1);
@@ -32,19 +32,9 @@ int main(int argc, char *argv[])
 
     show_wave.create(64, 33, CV_8UC1);
     show_ifft.create(64, 64, CV_8UC1);
-    optflow_FFT *offt = new optflow_FFT(64);
-    offt->fill_data(gray, 40, 130);
-    offt->run(0);
-    offt->fill_data(gray, 45, 133);
-    offt->run(1);
-    offt->calc_delta();
-    offt->copy_mul(&show_wave);
-    offt->out_ifft(&show_ifft);
-    offt->get_ifft_info(8, 0.9, 5, info);
-    cout<<"SNR   :"<<info->SNR<<endl;
-    cout<<"SumTop:"<<info->SumTop<<endl;
-    cout<<"NtMost:"<<info->NtopMost<<endl;
-    //offt->copy_result(show_wave.ptr(), show_ifft.ptr());
+
+    runFFT(gray, show_wave, show_ifft);
+
     resize(show_ifft, scaleUp, Size(), 4.0, 4.0, INTER_NEAREST);
     imshow("ifft_4x", scaleUp);
     imshow("wave", show_wave);
@@ -71,4 +61,21 @@ void runHough(Mat &gray, Mat &out)
     mHough->waitOK();
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts1);
     //cout<< (ts1.tv_nsec - ts0.tv_nsec)/1000 << "us" <<endl;
+}
+
+void runFFT(Mat &gray, Mat &show_wave, Mat &show_ifft)
+{
+    optflow_FFT *offt = new optflow_FFT(64);
+    auto *info = new ifft_info;
+    offt->fill_data(gray, 40, 130);
+    offt->run(0);
+    offt->fill_data(gray, 45, 133);
+    offt->run(1);
+    offt->calc_delta();
+    offt->copy_mul(&show_wave);
+    offt->out_ifft(&show_ifft);
+    offt->get_ifft_info(8, 0.9, 5, info);
+    cout<<"SNR   :"<<info->SNR<<endl;
+    cout<<"SumTop:"<<info->SumTop<<endl;
+    cout<<"NtMost:"<<info->NtopMost<<endl;
 }
