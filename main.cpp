@@ -22,6 +22,7 @@ int main(int argc, char *argv[])
     Mat out;
     Mat show_wave, show_ifft;
     Mat scaleUp;
+    auto *info = new ifft_info;
     if(img_color.empty())
        return -1;
     gray.create(img_color.size(), CV_8UC1);
@@ -51,7 +52,10 @@ int main(int argc, char *argv[])
     offt->calc_delta();
     offt->copy_mul(&show_wave);
     offt->out_ifft(&show_ifft);
-    cout<<offt->get_ifft_SNR(8)<<endl;
+    offt->get_ifft_info(8, 0.9, 5, info);
+    cout<<"SNR   :"<<info->SNR<<endl;
+    cout<<"SumTop:"<<info->SumTop<<endl;
+    cout<<"NtMost:"<<info->NtopMost<<endl;
     //offt->copy_result(show_wave.ptr(), show_ifft.ptr());
     resize(show_ifft, scaleUp, Size(), 4.0, 4.0, INTER_NEAREST);
     imshow("ifft_4x", scaleUp);

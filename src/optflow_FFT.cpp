@@ -82,22 +82,46 @@ void optflow_FFT::calc_delta()
     }
 }
 
-//Signal window wide
-double optflow_FFT::get_ifft_SNR(int w)
+//@para w:Signal window wide
+//@para most: how most enegry in window, result to NtopMost, suggest 0.8~0.95
+//@para SumNtop: number top to Sum, result to SumTop, suggest 5-8
+//@para info: output info
+void optflow_FFT::get_ifft_info(int w, double most, int SumNtop, ifft_info *info)
 {
     double mAll = 64*64*64*64;//mean all
     double mWin = 0;          //mean in window
     double Signal, Noise;
+    double *wsort = new double[w*w];
+    double wsort_partsum = 0;
+    double SumTop = 0;
+    int Npart = 0;
     for(int i=0;i<w;i++) {
         for(int j=0;j<w;j++) {
-            mWin+=ifft[i*n+j]*ifft[i*n+j];
+            mWin += ifft[i*n+j]*ifft[i*n+j];
+            wsort[i*w+j] = ifft[i*n+j]*ifft[i*n+j];
         }
     }
+
+
     //mWin = Signal+w*Noise;
     //mAll = Signal+n*Noise;
     Signal = (n*mWin - w*mAll)/(n-w);
     Noise  = (mAll - mWin)/(n-w);
-    return Signal/Noise;
+
+    sort(&wsort[0], &wsort[w*w]);
+    while(wsort_partsum < mWin*most && Npart<w*w) {
+        wsort_partsum += wsort[w*w-Npart-1];
+        Npart++;
+    }
+
+    for(int i=0;i < SumNtop;i++) {
+        SumTop += wsort[w*w-i-1];
+    }
+
+    info->SNR = Signal/Noise;
+    info->SumTop = SumTop;
+    info->NtopMost = Npart;
+    delete wsort;
 }
 
 void optflow_FFT::xsum(double dx, double dy, fftw_complex &ret)
