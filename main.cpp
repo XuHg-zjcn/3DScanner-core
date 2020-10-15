@@ -75,7 +75,7 @@ void runFFT(Mat &gray, Mat &show_wave, Mat &show_ifft)
     offt->copy_mul(&show_wave);
     offt->out_ifft(&show_ifft);
     offt->get_ifft_info(8, 0.9, 5, info);
-    cout<<"SNR   :"<<info->SNR<<endl;
-    cout<<"SumTop:"<<info->SumTop<<endl;
-    cout<<"NtMost:"<<info->NtopMost<<endl;
+    cout<<"SNR  :"<<info->SNR<<endl;
+    cout<<"TopP :"<<info->TopP<<endl;
+    cout<<"Nmost:"<<info->Nmost<<endl;
 }

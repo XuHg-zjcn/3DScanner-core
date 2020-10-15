@@ -84,7 +84,7 @@ void optflow_FFT::calc_delta()
 
 //@para w:Signal window wide
 //@para most: how most enegry in window, result to NtopMost, suggest 0.8~0.95
-//@para SumNtop: number top to Sum, result to SumTop, suggest 5-8
+//@para SumNtop: number top to Sum, result to SumTop, suggest 4-6
 //@para info: output info
 void optflow_FFT::get_ifft_info(int w, double most, int SumNtop, ifft_info *info)
 {
@@ -105,11 +105,11 @@ void optflow_FFT::get_ifft_info(int w, double most, int SumNtop, ifft_info *info
 
     //mWin = Signal+w*Noise;
     //mAll = Signal+n*Noise;
-    Signal = (n*mWin - w*mAll)/(n-w);
-    Noise  = (mAll - mWin)/(n-w);
+    Signal = (n*n*mWin - w*w*mAll)/(n*n-w*w);
+    Noise  = (mAll - mWin)/(n*n-w*w);
 
     sort(&wsort[0], &wsort[w*w]);
-    while(wsort_partsum < mWin*most && Npart<w*w) {
+    while(wsort_partsum < mWin*most+Noise*Npart && Npart<w*w) {
         wsort_partsum += wsort[w*w-Npart-1];
         Npart++;
     }
@@ -119,8 +119,8 @@ void optflow_FFT::get_ifft_info(int w, double most, int SumNtop, ifft_info *info
     }
 
     info->SNR = Signal/Noise;
-    info->SumTop = SumTop;
-    info->NtopMost = Npart;
+    info->TopP = SumTop/Signal;
+    info->Nmost = Npart;
     delete wsort;
 }
 

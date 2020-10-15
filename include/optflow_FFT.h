@@ -6,9 +6,9 @@
 using namespace cv;
 
 typedef struct {
-    double SNR;
-    double SumTop;
-    int NtopMost;
+    double SNR; //Signal(Enegry) / Noise(Power), Signal equal Noise Npixel
+    double TopP;//Sum_Ntop(Enegry) / Signal(Enegry)
+    int Nmost;  //Sum[0<=i<Nmost] Top(i) >= 0.9
 }ifft_info;
 
 class optflow_FFT
