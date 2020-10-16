@@ -77,7 +77,7 @@ void optflow_FFT::fill_data(Mat &mat_in, int x0, int y0)
     for(int i=y0;i<y0+n;i++) {
         ptr_row = mat_in.ptr(i, x0);
         for(int j=0;j<n;j++) {
-            *ptr_db++=*ptr_row++;
+            *ptr_db++=(*ptr_row++)/255.0;
         }
     }
 }
@@ -202,6 +202,8 @@ void optflow_FFT::complex_to_u8(fftw_complex *pIn, uint8_t *pOut, int len)
             vmax=v;
     }
     pIn1=pIn;
+    vmin=-10;
+    vmax=10;
     for(int i=0;i<len;i++) {
         v = (*pIn1++)[0];
         v = (v-vmin)/(vmax-vmin)*255;
