@@ -67,7 +67,7 @@ void runHough(Mat &gray, Mat &out)
 void runFFT(Mat &gray, Mat &show_wave, Mat &show_ifft)
 {
     optflow_FFT *offt = new optflow_FFT(64);
-    auto *info = new ifft_quality;
+    ifft_quality info;
     offt->fill_data(gray, 40, 130);
     offt->run(0);
     offt->fill_data(gray, 45, 133);
@@ -76,10 +76,11 @@ void runFFT(Mat &gray, Mat &show_wave, Mat &show_ifft)
     offt->copy_mul(&show_wave);
     offt->run(2);
     offt->out_ifft(&show_ifft);
-    offt->get_ifft_info(8, 0.9, 5, info);
-    cout<<"SNR  :"<<info->SNR<<endl;
-    cout<<"TopP :"<<info->TopP<<endl;
-    cout<<"Nmost:"<<info->Nmost<<endl;
+    offt->get_ifft_info(8, 0.9, 5, &info);
+    cout<<"SNR  :"<<info.SNR<<endl;
+    cout<<"TopP :"<<info.TopP<<endl;
+    cout<<"Nmost:"<<info.Nmost<<endl;
+    delete offt;
 }
 
 void runSNRTest(const Mat &gray)
