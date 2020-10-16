@@ -7,6 +7,7 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 using namespace std;
+
 optflow_FFT::optflow_FFT(int n)
 {
     //ctor
@@ -33,16 +34,26 @@ optflow_FFT::~optflow_FFT()
     fftw_free(crop_db);
     fftw_free(out1);
     fftw_free(out2);
+    fftw_free(mul);
     fftw_destroy_plan(p1);
     fftw_destroy_plan(p2);
 }
 
 void optflow_FFT::run(int n)
 {
-    if(n==0)
-        fftw_execute(p1);
-    else
-        fftw_execute(p2);
+    switch(n) {
+        case 0:
+            fftw_execute(p1);
+            break;
+        case 1:
+            fftw_execute(p2);
+            break;
+        case 2:
+            fftw_execute(p_ifft);
+            break;
+        default:
+            break;
+    }
 }
 
 int optflow_FFT::save()
@@ -86,7 +97,7 @@ void optflow_FFT::calc_delta()
 //@para most: how most enegry in window, result to NtopMost, suggest 0.8~0.95
 //@para SumNtop: number top to Sum, result to SumTop, suggest 4-6
 //@para info: output info
-void optflow_FFT::get_ifft_info(int w, double most, int SumNtop, ifft_info *info)
+void optflow_FFT::get_ifft_info(int w, double most, int SumNtop, ifft_quality *info)
 {
     double mAll = n*n*n*n;//mean all
     double mWin = 0;          //mean in window
@@ -132,7 +143,7 @@ void optflow_FFT::xsum(double dx, double dy, fftw_complex &ret)
     ret[1]=0;
     for(int i=0;i<n21;i++) {
         for(int j=0;j<n21;j++) {
-            v = (double)(i*dx+j*dy)/64*2*M_PI;
+            v = (double)(i*dx+j*dy)/n*2*M_PI;
             ret[0] += mul[n21*i+j][0]*cos(v) - mul[n21*i+j][1]*sin(v);
             ret[1] += mul[n21*i+j][0]*sin(v) + mul[n21*i+j][1]*cos(v);
         }
@@ -202,11 +213,59 @@ void optflow_FFT::WT(Mat *out, double div)
 //call after calc_delta
 void optflow_FFT::out_ifft(Mat *out)
 {
-    fftw_execute(p_ifft);
     double_to_u8(ifft, out->ptr(), n*n);
 }
 
 void optflow_FFT::copy_mul(Mat *out)
 {
     complex_to_u8(mul, out->ptr(), n*(n+1)/2);
+}
+
+bool operator> (const AreaDesc& x, const AreaDesc& y) {
+    return x.scorce > y.scorce;
+}
+
+void optflow_FFT::getGoodArea(Mat &img1, Mat &img2, int max_NArea, double min_scorce)
+{
+    assert(img1.rows == img2.rows);
+    assert(img1.cols == img2.cols);
+    int NRow = img1.rows/n; //size of areas array
+    int NCol = img1.cols/n; //per area is n*n pixel
+    ifft_quality info;
+    AreaDesc* pAreas;
+
+    assert(max_NArea <= NRow*NCol);
+    if(areas == nullptr) {
+        areas = (AreaDesc*)malloc(sizeof(AreaDesc)*NRow*NCol);
+    }
+    pAreas = areas;
+    for(int i=0;i<NRow;i++) {
+        for(int j=0;j<NCol;j++) {
+            fill_data(img1, j*n, i*n);
+            run(0);
+            fill_data(img2, j*n, i*n);
+            run(1);
+            calc_delta();
+            run(2);
+            get_ifft_info(8, 0.9, 5, &info);
+            pAreas->id = i*NCol+j;
+            pAreas->x0 = j*n;
+            pAreas->y0 = i*n;
+            pAreas->is_Good = false;
+            //pAreas->qua = info;
+            pAreas->scorce = info.SNR*info.TopP;
+            pAreas++;
+        }
+    }
+    AreaDesc *areas2 = new AreaDesc[NRow*NCol];
+    memcpy(areas2, areas, sizeof(AreaDesc)*NRow*NCol);
+    sort(areas2, areas2+NRow*NCol, greater<AreaDesc>());
+    for(int i=0;i<max_NArea;i++) {
+        if(areas2[i].scorce >= min_scorce) {
+            areas[areas2[i].id].is_Good = true;
+        }else{
+            break;
+        }
+    }
+    delete areas2;
 }

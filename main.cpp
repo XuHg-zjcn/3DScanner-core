@@ -14,12 +14,12 @@ using namespace cv;
 
 void runHough(Mat &gray, Mat &out);
 void runFFT(Mat &gray, Mat &show_wave, Mat &show_ifft);
+void runSNRTest(const Mat &gray);
 
 int main(int argc, char *argv[])
 {
     Mat img_color = imread("lena.jpg", CV_LOAD_IMAGE_COLOR);
     Mat gray;
-    Rect rect;
     Mat out;
     Mat show_wave, show_ifft;
     Mat scaleUp;
@@ -34,6 +34,7 @@ int main(int argc, char *argv[])
     show_ifft.create(64, 64, CV_8UC1);
 
     runFFT(gray, show_wave, show_ifft);
+    runSNRTest(gray);
 
     resize(show_ifft, scaleUp, Size(), 4.0, 4.0, INTER_NEAREST);
     imshow("ifft_4x", scaleUp);
@@ -66,16 +67,33 @@ void runHough(Mat &gray, Mat &out)
 void runFFT(Mat &gray, Mat &show_wave, Mat &show_ifft)
 {
     optflow_FFT *offt = new optflow_FFT(64);
-    auto *info = new ifft_info;
+    auto *info = new ifft_quality;
     offt->fill_data(gray, 40, 130);
     offt->run(0);
     offt->fill_data(gray, 45, 133);
     offt->run(1);
     offt->calc_delta();
     offt->copy_mul(&show_wave);
+    offt->run(2);
     offt->out_ifft(&show_ifft);
     offt->get_ifft_info(8, 0.9, 5, info);
     cout<<"SNR  :"<<info->SNR<<endl;
     cout<<"TopP :"<<info->TopP<<endl;
     cout<<"Nmost:"<<info->Nmost<<endl;
+}
+
+void runSNRTest(const Mat &gray)
+{
+    optflow_FFT *offt = new optflow_FFT(32);
+    AreaDesc *areas;
+    Rect rect1 = Rect(0, 0, 200, 200);
+    Rect rect2 = Rect(2, 3, 200, 200);
+    Mat crop1 = gray(rect1);
+    Mat crop2 = gray(rect2);
+    offt->getGoodArea(crop1, crop2, 5, 1000.0);
+    areas = offt->areas;
+    for(int i=0;i<10;i++) {
+        cout<< (areas++)->scorce <<endl;
+    }
+    delete offt;
 }

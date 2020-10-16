@@ -9,7 +9,16 @@ typedef struct {
     double SNR; //Signal(Enegry) / Noise(Power), Signal equal Noise Npixel
     double TopP;//Sum_Ntop(Enegry) / Signal(Enegry)
     int Nmost;  //Sum[0<=i<Nmost] Top(i) >= 0.9
-}ifft_info;
+}ifft_quality;
+
+typedef struct AreaDesc{
+    int id;
+    int x0;
+    int y0;
+    bool is_Good;
+    ifft_quality qua;
+    double scorce;
+}AreaDesc;
 
 class optflow_FFT
 {
@@ -19,13 +28,15 @@ class optflow_FFT
         void run(int n);
         void fill_data(Mat &in, int x0, int y0);
         void calc_delta();
-        void get_ifft_info(int w, double most, int SumNtop, ifft_info *info);
+        void get_ifft_info(int w, double most, int SumNtop, ifft_quality *info);
         void xsum(double dx, double dy, fftw_complex &ret);
         void complex_to_u8(fftw_complex *pIn, uint8_t *pOut, int len);
         void double_to_u8(double *pIn, uint8_t *pOut, int len);
         void WT(Mat *out, double div);
         void out_ifft(Mat *out);
         void copy_mul(Mat *out);
+        void getGoodArea(Mat &img1, Mat &img2, int max_NArea, double min_scorce);
+        AreaDesc *areas = nullptr;
 
     protected:
         int save();
