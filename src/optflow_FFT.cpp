@@ -119,14 +119,14 @@ void optflow_FFT::get_ifft_info(int w, double most, int SumNtop, ifft_quality *i
     Signal = (n*n*mWin - w*w*mAll)/(n*n-w*w);
     Noise  = (mAll - mWin)/(n*n-w*w);
 
-    sort(&wsort[0], &wsort[w*w]);
+    sort(&wsort[0], &wsort[w*w], greater<double>());
     while(wsort_partsum < mWin*most+Noise*Npart && Npart<w*w) {
-        wsort_partsum += wsort[w*w-Npart-1];
+        wsort_partsum += wsort[Npart];
         Npart++;
     }
 
     for(int i=0;i < SumNtop;i++) {
-        SumTop += wsort[w*w-i-1];
+        SumTop += wsort[i];
     }
 
     info->SNR = Signal/Noise;
