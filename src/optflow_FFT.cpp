@@ -35,6 +35,7 @@ optflow_FFT::~optflow_FFT()
     fftw_free(out1);
     fftw_free(out2);
     fftw_free(mul);
+    fftw_free(ifft);
     fftw_destroy_plan(p1);
     fftw_destroy_plan(p2);
 }
