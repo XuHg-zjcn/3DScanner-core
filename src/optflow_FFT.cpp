@@ -130,7 +130,7 @@ void optflow_FFT::get_ifft_info(int w, double most, int SumNtop, ifft_quality *i
         SumTop += wsort[i];
     }
 
-    info->SNR = Signal/Noise;
+    info->SNR = Signal/Noise/(n*n);
     info->TopP = SumTop/Signal;
     info->Nmost = Npart;
     delete wsort;
@@ -236,6 +236,8 @@ void optflow_FFT::getGoodArea(Mat &img1, Mat &img2, int max_NArea, double min_sc
     AreaDesc* pAreas;
 
     assert(max_NArea <= NRow*NCol);
+    NAreas = NRow*NCol;
+
     if(areas == nullptr) {
         areas = (AreaDesc*)malloc(sizeof(AreaDesc)*NRow*NCol);
     }
@@ -253,14 +255,14 @@ void optflow_FFT::getGoodArea(Mat &img1, Mat &img2, int max_NArea, double min_sc
             pAreas->x0 = j*n;
             pAreas->y0 = i*n;
             pAreas->is_Good = false;
-            //pAreas->qua = info;
+            pAreas->qua = info;
             pAreas->scorce = info.SNR*info.TopP;
             pAreas++;
         }
     }
-    AreaDesc *areas2 = new AreaDesc[NRow*NCol];
-    memcpy(areas2, areas, sizeof(AreaDesc)*NRow*NCol);
-    sort(areas2, areas2+NRow*NCol, greater<AreaDesc>());
+    AreaDesc *areas2 = new AreaDesc[NAreas];
+    memcpy(areas2, areas, sizeof(AreaDesc)*NAreas);
+    sort(areas2, areas2+NAreas, greater<AreaDesc>());
     for(int i=0;i<max_NArea;i++) {
         if(areas2[i].scorce >= min_scorce) {
             areas[areas2[i].id].is_Good = true;

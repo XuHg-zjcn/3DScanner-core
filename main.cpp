@@ -88,16 +88,16 @@ void runSNRTest(const Mat &gray, Mat &color, int n)
 {
     uint8_t *c = color.ptr();
     uint8_t *c1;
-
+    timespec ts0{}, ts1{};
     optflow_FFT *offt = new optflow_FFT(n);
     AreaDesc *areas;
-    Rect rect1 = Rect(0, 0, 200, 200);
-    Rect rect2 = Rect(2, 3, 200, 200);
+    Rect rect1 = Rect(0, 0, 250, 250);
+    Rect rect2 = Rect(2, 3, 250, 250);
     Mat crop1 = gray(rect1);
     Mat crop2 = gray(rect2);
-    offt->getGoodArea(crop1, crop2, 10, 500.0);
+    offt->getGoodArea(crop1, crop2, 20, 0.0);
     areas = offt->areas;
-    for(int i=0;i<20;i++) {
+    for(int i=0;i<offt->NAreas;i++) {
         if(areas->is_Good) {
             cout<< areas->x0 << ',' << areas->y0 << ',' << areas->scorce <<endl;
             c1 = c + ((areas->y0)*color.cols + areas->x0)*3;

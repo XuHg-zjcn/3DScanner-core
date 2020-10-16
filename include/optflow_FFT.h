@@ -33,6 +33,7 @@ class optflow_FFT
         void out_ifft(Mat *out);
         void copy_mul(Mat *out);
         void getGoodArea(Mat &img1, Mat &img2, int max_NArea, double min_scorce);
+        int NAreas;
         AreaDesc *areas = nullptr;
 
     protected:
