@@ -94,6 +94,47 @@ void optflow_FFT::calc_delta()
     }
 }
 
+double line_sum(double *start, double *last, double *results)
+{
+    double sum = 0;
+    double x2;
+    while(start<last) {
+        x2 = (*start) * (*start);
+        sum += x2;
+        (*results++) = x2;
+        start++;
+    }
+    return sum;
+}
+
+double optflow_FFT::corner4_sum(double *results, const int w)
+{
+    double sum = 0;
+    for(int i=0;i<w;i++) {
+        sum += line_sum(&ifft[i*n], &ifft[i*n+w], results);
+        results += w;
+        sum += line_sum(&ifft[i*n+n-w], &ifft[i*n+n], results);
+        results += w;
+    }
+    for(int i=n-w;i<n;i++) {
+        sum += line_sum(&ifft[i*n], &ifft[i*n+w], results);
+        results += w;
+        sum += line_sum(&ifft[i*n+n-w], &ifft[i*n+n], results);
+        results += w;
+    }
+    return sum;
+}
+
+double optflow_FFT::ifft_sum()
+{
+    double sum = 0;
+    double *p = ifft;
+    for(int i=0;i<n*n;i++) {
+        sum += (*p) * (*p);
+        p++;
+    }
+    return sum;
+}
 //@para w:Signal window wide
 //@para most: how most enegry in window, result to NtopMost, suggest 0.8~0.95
 //@para SumNtop: number top to Sum, result to SumTop, suggest 4-6
@@ -103,23 +144,17 @@ void optflow_FFT::get_ifft_info(int w, double most, int SumNtop, ifft_quality *i
     double mAll = 0;          //mean all
     double mWin = 0;          //mean in window
     double Signal, Noise;
-    double *wsort = new double[w*w];
+    double *wsort = new double[w*w*4];
     double wsort_partsum = 0;
     double SumTop = 0;
     int Npart = 0;
-    for(int i=0;i<w;i++) {
-        for(int j=0;j<w;j++) {
-            mWin += ifft[i*n+j]*ifft[i*n+j];
-            wsort[i*w+j] = ifft[i*n+j]*ifft[i*n+j];
-        }
-    }
-    for(int i=0;i<n*n;i++) {
-        mAll += ifft[i]*ifft[i];
-    }
+
+    mWin = corner4_sum(wsort, w);
+    mAll = ifft_sum();
     //mWin = Signal+w2*Noise;
     //mAll = Signal+n2*Noise;
-    Signal = (n*n*mWin - w*w*mAll)/(n*n-w*w);
-    Noise  = (mAll - mWin)/(n*n-w*w);
+    Signal = (n*n*mWin - w*w*4*mAll)/(n*n-w*w*4);
+    Noise  = (mAll - mWin)/(n*n-w*w*4);
 
     sort(&wsort[0], &wsort[w*w], greater<double>());
     while(wsort_partsum < mWin*most+Noise*Npart && Npart<w*w) {

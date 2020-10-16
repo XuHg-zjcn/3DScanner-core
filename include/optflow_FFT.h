@@ -54,6 +54,8 @@ class optflow_FFT
         void complex_to_u8(fftw_complex *pIn, uint8_t *pOut, int len);
         void double_to_u8(double *pIn, uint8_t *pOut, int len);
         void xsum(double dx, double dy, fftw_complex &ret);
+        double corner4_sum(double *results, const int w);
+        double ifft_sum();
 };
 
 #endif // OPTFLOW_FFT_H
