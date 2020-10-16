@@ -16,6 +16,7 @@ using namespace cv;
 void runHough(Mat &gray, Mat &out);
 void runFFT(Mat &gray, Mat &show_wave, Mat &show_ifft);
 void runSNRTest(const Mat &gray, Mat &color, int n);
+void draw_mask(Mat &color, AreaDesc *areas, int NAreas, int n);
 
 int main(int argc, char *argv[])
 {
@@ -87,8 +88,6 @@ void runFFT(Mat &gray, Mat &show_wave, Mat &show_ifft)
 
 void runSNRTest(const Mat &gray, Mat &color, int n)
 {
-    uint8_t *c = color.ptr();
-    uint8_t *c1;
     timespec ts0{}, ts1{};
     optflow_FFT *offt = new optflow_FFT(n);
     AreaDesc *areas;
@@ -98,7 +97,19 @@ void runSNRTest(const Mat &gray, Mat &color, int n)
     Mat crop2 = gray(rect2);
     offt->getGoodArea(crop1, crop2, 20, 0.0);
     areas = offt->areas;
-    for(int i=0;i<offt->NAreas;i++) {
+    draw_mask(color, areas, offt->NAreas, n);
+    delete offt;
+}
+
+//@para color:color image to draw masks
+//@para areas:AreaDesc structs ptr
+//@para NAreas:get from offt->NAreas
+//@para n:n pixel side per area
+void draw_mask(Mat &color, AreaDesc *areas, int NAreas, int n)
+{
+    uint8_t *c = color.ptr();
+    uint8_t *c1;
+    for(int i=0;i<NAreas;i++) {
         if(areas->is_Good) {
             cout<<right<<setw(5)<< areas->x0 << ',';
             cout<<right<<setw(5)<< areas->y0 << ',';
@@ -115,5 +126,4 @@ void runSNRTest(const Mat &gray, Mat &color, int n)
         }
         areas++;
     }
-    delete offt;
 }
