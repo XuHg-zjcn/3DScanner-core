@@ -88,7 +88,7 @@ void optflow_FFT::calc_delta()
     for(int i=0;i<n*(n/2+1);i++) {
         mul_real = out1[i][0]*out2[i][0] + out1[i][1]*out2[i][1];
         mul_imag =-out1[i][0]*out2[i][1] + out1[i][1]*out2[i][0];
-        sqrt2 = sqrt(mul_real*mul_real + mul_imag*mul_imag);
+        sqrt2 = sqrt(sqrt(mul_real*mul_real + mul_imag*mul_imag));
         mul[i][0] = mul_real/sqrt2;
         mul[i][1] = mul_imag/sqrt2;
     }
@@ -100,7 +100,7 @@ void optflow_FFT::calc_delta()
 //@para info: output info
 void optflow_FFT::get_ifft_info(int w, double most, int SumNtop, ifft_quality *info)
 {
-    double mAll = n*n*n*n;//mean all
+    double mAll = 0;          //mean all
     double mWin = 0;          //mean in window
     double Signal, Noise;
     double *wsort = new double[w*w];
@@ -113,8 +113,9 @@ void optflow_FFT::get_ifft_info(int w, double most, int SumNtop, ifft_quality *i
             wsort[i*w+j] = ifft[i*n+j]*ifft[i*n+j];
         }
     }
-
-
+    for(int i=0;i<n*n;i++) {
+        mAll += ifft[i]*ifft[i];
+    }
     //mWin = Signal+w*Noise;
     //mAll = Signal+n*Noise;
     Signal = (n*n*mWin - w*w*mAll)/(n*n-w*w);

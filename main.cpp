@@ -5,6 +5,7 @@
 #include <opencv2/imgcodecs/legacy/constants_c.h>
 #include <ctime>
 #include <iostream>
+#include <iomanip>
 #include "Hough.h"
 #include "Hough_core.h"
 #define pi 3.1415926535
@@ -99,7 +100,9 @@ void runSNRTest(const Mat &gray, Mat &color, int n)
     areas = offt->areas;
     for(int i=0;i<offt->NAreas;i++) {
         if(areas->is_Good) {
-            cout<< areas->x0 << ',' << areas->y0 << ',' << areas->scorce <<endl;
+            cout<<right<<setw(5)<< areas->x0 << ',';
+            cout<<right<<setw(5)<< areas->y0 << ',';
+            cout<<' '<<left <<setw(4)<< areas->scorce <<endl;
             c1 = c + ((areas->y0)*color.cols + areas->x0)*3;
             for(int i=0;i<n;i++) {
                 for(int i=0;i<n;i++) {
