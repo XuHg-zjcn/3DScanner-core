@@ -14,7 +14,7 @@ using namespace cv;
 
 void runHough(Mat &gray, Mat &out);
 void runFFT(Mat &gray, Mat &show_wave, Mat &show_ifft);
-void runSNRTest(const Mat &gray);
+void runSNRTest(const Mat &gray, Mat &color, int n);
 
 int main(int argc, char *argv[])
 {
@@ -34,11 +34,12 @@ int main(int argc, char *argv[])
     show_ifft.create(64, 64, CV_8UC1);
 
     runFFT(gray, show_wave, show_ifft);
-    runSNRTest(gray);
+    runSNRTest(gray, img_color, 32);
 
     resize(show_ifft, scaleUp, Size(), 4.0, 4.0, INTER_NEAREST);
     imshow("ifft_4x", scaleUp);
     imshow("wave", show_wave);
+    imshow("img_color", img_color);
 
     waitKey(0);
     return 0;
@@ -83,18 +84,33 @@ void runFFT(Mat &gray, Mat &show_wave, Mat &show_ifft)
     delete offt;
 }
 
-void runSNRTest(const Mat &gray)
+void runSNRTest(const Mat &gray, Mat &color, int n)
 {
-    optflow_FFT *offt = new optflow_FFT(32);
+    uint8_t *c = color.ptr();
+    uint8_t *c1;
+
+    optflow_FFT *offt = new optflow_FFT(n);
     AreaDesc *areas;
     Rect rect1 = Rect(0, 0, 200, 200);
     Rect rect2 = Rect(2, 3, 200, 200);
     Mat crop1 = gray(rect1);
     Mat crop2 = gray(rect2);
-    offt->getGoodArea(crop1, crop2, 5, 1000.0);
+    offt->getGoodArea(crop1, crop2, 10, 500.0);
     areas = offt->areas;
-    for(int i=0;i<10;i++) {
-        cout<< (areas++)->scorce <<endl;
+    for(int i=0;i<20;i++) {
+        if(areas->is_Good) {
+            cout<< areas->x0 << ',' << areas->y0 << ',' << areas->scorce <<endl;
+            c1 = c + ((areas->y0)*color.cols + areas->x0)*3;
+            for(int i=0;i<n;i++) {
+                for(int i=0;i<n;i++) {
+                    c1++;
+                    (*c1++) = (*c1)/4*2 + 255/4*2;
+                    c1++;
+                }
+                c1 += (color.cols-n)*3;
+            }
+        }
+        areas++;
     }
     delete offt;
 }
