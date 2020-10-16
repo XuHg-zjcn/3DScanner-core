@@ -116,8 +116,8 @@ void optflow_FFT::get_ifft_info(int w, double most, int SumNtop, ifft_quality *i
     for(int i=0;i<n*n;i++) {
         mAll += ifft[i]*ifft[i];
     }
-    //mWin = Signal+w*Noise;
-    //mAll = Signal+n*Noise;
+    //mWin = Signal+w2*Noise;
+    //mAll = Signal+n2*Noise;
     Signal = (n*n*mWin - w*w*mAll)/(n*n-w*w);
     Noise  = (mAll - mWin)/(n*n-w*w);
 
