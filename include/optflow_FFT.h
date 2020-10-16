@@ -29,9 +29,6 @@ class optflow_FFT
         void fill_data(Mat &in, int x0, int y0);
         void calc_delta();
         void get_ifft_info(int w, double most, int SumNtop, ifft_quality *info);
-        void xsum(double dx, double dy, fftw_complex &ret);
-        void complex_to_u8(fftw_complex *pIn, uint8_t *pOut, int len);
-        void double_to_u8(double *pIn, uint8_t *pOut, int len);
         void WT(Mat *out, double div);
         void out_ifft(Mat *out);
         void copy_mul(Mat *out);
@@ -52,6 +49,10 @@ class optflow_FFT
         fftw_complex *out2;
         fftw_complex *mul;
         double *ifft;
+
+        void complex_to_u8(fftw_complex *pIn, uint8_t *pOut, int len);
+        void double_to_u8(double *pIn, uint8_t *pOut, int len);
+        void xsum(double dx, double dy, fftw_complex &ret);
 };
 
 #endif // OPTFLOW_FFT_H
