@@ -25,8 +25,10 @@ int main(int argc, char *argv[])
     Mat out;
     Mat show_wave, show_ifft;
     Mat scaleUp;
-    if(img_color.empty())
-       return -1;
+    if(img_color.empty()){
+        cout<<"Test image 'lena.jpg'(256x256) not found!"
+        return -1;
+    }
     gray.create(img_color.size(), CV_8UC1);
     cvtColor(img_color, gray, CV_RGB2GRAY);
 

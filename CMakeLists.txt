@@ -5,6 +5,7 @@ add_definitions("-g -O3 -std=c++17 -lpthread")
 #OpenCV
 find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
+message("OpenCV found in: " ${OpenCV_INCLUDE_DIRS})
 
 #FFTW
 set(FFTW3_DIR ${CMAKE_CURRENT_SOURCE_DIR}/fftw-3.3.8)
