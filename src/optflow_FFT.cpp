@@ -84,7 +84,7 @@ void optflow_FFT::fill_data(Mat &mat_in, int x0, int y0)
 
 void optflow_FFT::calc_delta()
 {
-    double mul_real, mul_imag, sqrt2, v;
+    double mul_real, mul_imag, sqrt2;
     for(int i=0;i<n*(n/2+1);i++) {
         mul_real = out1[i][0]*out2[i][0] + out1[i][1]*out2[i][1];
         mul_imag =-out1[i][0]*out2[i][1] + out1[i][1]*out2[i][0];
@@ -192,7 +192,9 @@ void optflow_FFT::xsum(double dx, double dy, fftw_complex &ret)
 
 void optflow_FFT::complex_to_u8(fftw_complex *pIn, uint8_t *pOut, int len)
 {
-    double v,vmax,vmin;
+    double v;
+    double vmax=*pIn[0];
+    double vmin=*pIn[0];
     fftw_complex *pIn1=pIn;
     for(int i=0;i<len;i++) {
         v = (*pIn1++)[0];
@@ -215,7 +217,9 @@ void optflow_FFT::complex_to_u8(fftw_complex *pIn, uint8_t *pOut, int len)
 
 void optflow_FFT::double_to_u8(double *pIn, uint8_t *pOut, int len)
 {
-    double v,vmax,vmin;
+    double v;
+    double vmax=*pIn;
+    double vmin=*pIn;
     double *pIn1=pIn;
     for(int i=0;i<len;i++) {
         v = *pIn1++;

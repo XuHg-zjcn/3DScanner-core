@@ -41,7 +41,7 @@ class optflow_FFT
         int load();
 
     private:
-        uint32_t n=0;
+        int n=0;
         fftw_plan p1;
         fftw_plan p2;
         fftw_plan p_ifft;

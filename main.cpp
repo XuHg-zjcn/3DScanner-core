@@ -88,7 +88,6 @@ void runFFT(Mat &gray, Mat &show_wave, Mat &show_ifft)
 
 void runSNRTest(const Mat &gray, Mat &color, int n)
 {
-    timespec ts0{}, ts1{};
     optflow_FFT *offt = new optflow_FFT(n);
     AreaDesc *areas;
     Rect rect1 = Rect(0, 0, 250, 250);
@@ -118,7 +117,8 @@ void draw_mask(Mat &color, AreaDesc *areas, int NAreas, int n)
             for(int i=0;i<n;i++) {
                 for(int i=0;i<n;i++) {
                     c1++;
-                    (*c1++) = (*c1)/4*2 + 255/4*2;
+                    *c1 = (*c1)/4*2 + 255/4*2;
+                    c1++;
                     c1++;
                 }
                 c1 += (color.cols-n)*3;
