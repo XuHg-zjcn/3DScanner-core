@@ -5,6 +5,22 @@
 #include <opencv2/core/core.hpp>
 using namespace cv;
 
+#ifdef USE_SINGLE
+#define fftw_malloc fftwf_malloc
+#define fftw_free fftwf_free
+#define fftw_destroy_plan fftwf_destroy_plan
+
+#define fftw_plan fftwf_plan
+#define fftw_plan_dft_r2c_2d fftwf_plan_dft_r2c_2d
+#define fftw_plan_dft_c2r_2d fftwf_plan_dft_c2r_2d
+#define fftw_execute fftwf_execute
+#define fftw_import_wisdom_from_filename fftwf_import_wisdom_from_filename
+#define fftw_export_wisdom_to_file fftwf_export_wisdom_to_file
+
+#define fftw_complex fftwf_complex
+#define double float
+#endif // defined
+
 typedef struct {
     double SNR; //Signal(Enegry) / Noise(Power), Signal equal Noise Npixel
     double TopP;//Sum_Ntop(Enegry) / Signal(Enegry)

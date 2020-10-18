@@ -169,7 +169,7 @@ void optflow_FFT::get_ifft_info(int w, double most, int SumNtop, ifft_quality *i
     info->SNR = Signal/Noise/(n*n);
     info->TopP = SumTop/Signal;
     info->Nmost = Npart;
-    delete wsort;
+    delete[] wsort;
 }
 
 void optflow_FFT::xsum(double dx, double dy, fftw_complex &ret)
@@ -312,5 +312,5 @@ void optflow_FFT::getGoodArea(Mat &img1, Mat &img2, int max_NArea, double min_sc
             break;
         }
     }
-    delete areas2;
+    delete[] areas2;
 }
