@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.10.2)
 project(3DScaner-core)
 add_definitions("-g -O3 -std=c++17 -lpthread")
 
