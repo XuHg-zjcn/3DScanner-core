@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(SH-3DScaner-linux)
+project(3DScaner-core)
 add_definitions("-g -O3 -std=c++17 -lpthread")
 
 #OpenCV
