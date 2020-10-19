@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <iostream>
+#include <iomanip>
 #define _USE_MATH_DEFINES
 #include <cmath>
 using namespace std;
@@ -22,9 +23,9 @@ optflow_FFT::optflow_FFT(int n)
         p2 = fftw_plan_dft_r2c_2d(n, n, crop_db, out2, FFTW_WISDOM_ONLY);
         p_ifft = fftw_plan_dft_c2r_2d(n, n, mul, ifft, FFTW_WISDOM_ONLY);
     }else{
-        p1 = fftw_plan_dft_r2c_2d(n, n, crop_db, out1, FFTW_PATIENT);
-        p2 = fftw_plan_dft_r2c_2d(n, n, crop_db, out2, FFTW_PATIENT);
-        p_ifft = fftw_plan_dft_c2r_2d(n, n, mul, ifft, FFTW_PATIENT);
+        p1 = fftw_plan_dft_r2c_2d(n, n, crop_db, out1, FFTW_ESTIMATE);
+        p2 = fftw_plan_dft_r2c_2d(n, n, crop_db, out2, FFTW_ESTIMATE);
+        p_ifft = fftw_plan_dft_c2r_2d(n, n, mul, ifft, FFTW_ESTIMATE);
     }
 }
 
@@ -82,13 +83,15 @@ void optflow_FFT::fill_data(Mat &mat_in, int x0, int y0)
     }
 }
 
-void optflow_FFT::calc_delta()
+void optflow_FFT::calc_delta(bool sq2)
 {
     double mul_real, mul_imag, sqrt2;
     for(int i=0;i<n*(n/2+1);i++) {
         mul_real = out1[i][0]*out2[i][0] + out1[i][1]*out2[i][1];
         mul_imag =-out1[i][0]*out2[i][1] + out1[i][1]*out2[i][0];
-        sqrt2 = sqrt(sqrt(mul_real*mul_real + mul_imag*mul_imag));
+        sqrt2 = sqrt(mul_real*mul_real + mul_imag*mul_imag);
+        if(sq2)
+            sqrt2 = sqrt(sqrt2);
         mul[i][0] = mul_real/sqrt2;
         mul[i][1] = mul_imag/sqrt2;
     }
@@ -290,7 +293,7 @@ void optflow_FFT::getGoodArea(Mat &img1, Mat &img2, int max_NArea, double min_sc
             run(0);
             fill_data(img2, j*n, i*n);
             run(1);
-            calc_delta();
+            calc_delta(true);
             run(2);
             get_ifft_info(8, 0.9, 5, &info);
             pAreas->id = i*NCol+j;
@@ -313,4 +316,29 @@ void optflow_FFT::getGoodArea(Mat &img1, Mat &img2, int max_NArea, double min_sc
         }
     }
     delete[] areas2;
+}
+
+//@para color:color image to draw masks
+void optflow_FFT::draw_mask(Mat &color)
+{
+    uint8_t *c = color.ptr();
+    uint8_t *c1;
+    for(int i=0;i<NAreas;i++) {
+        if(areas->is_Good) {
+            cout<<right<<setw(5)<< areas->x0 << ',';
+            cout<<right<<setw(5)<< areas->y0 << ',';
+            cout<<' '<<left <<setw(4)<< areas->scorce <<endl;
+            c1 = c + ((areas->y0)*color.cols + areas->x0)*3;
+            for(int i=0;i<n;i++) {
+                for(int i=0;i<n;i++) {
+                    c1++;
+                    *c1 = (*c1)/4*2 + 255/4*2;
+                    c1++;
+                    c1++;
+                }
+                c1 += (color.cols-n)*3;
+            }
+        }
+        areas++;
+    }
 }

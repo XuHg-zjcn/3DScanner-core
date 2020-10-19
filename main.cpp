@@ -77,7 +77,7 @@ void runFFT(Mat &gray, Mat &show_wave, Mat &show_ifft)
     offt->run(0);
     offt->fill_data(gray, 45, 133);
     offt->run(1);
-    offt->calc_delta();
+    offt->calc_delta(true);
     offt->copy_mul(&show_wave);
     offt->run(2);
     offt->out_ifft(&show_ifft);
@@ -91,41 +91,11 @@ void runFFT(Mat &gray, Mat &show_wave, Mat &show_ifft)
 void runSNRTest(const Mat &gray, Mat &color, int n)
 {
     optflow_FFT *offt = new optflow_FFT(n);
-    AreaDesc *areas;
     Rect rect1 = Rect(0, 0, 250, 250);
     Rect rect2 = Rect(2, 3, 250, 250);
     Mat crop1 = gray(rect1);
     Mat crop2 = gray(rect2);
     offt->getGoodArea(crop1, crop2, 20, 0.0);
-    areas = offt->areas;
-    draw_mask(color, areas, offt->NAreas, n);
+    offt->draw_mask(color);
     delete offt;
-}
-
-//@para color:color image to draw masks
-//@para areas:AreaDesc structs ptr
-//@para NAreas:get from offt->NAreas
-//@para n:n pixel side per area
-void draw_mask(Mat &color, AreaDesc *areas, int NAreas, int n)
-{
-    uint8_t *c = color.ptr();
-    uint8_t *c1;
-    for(int i=0;i<NAreas;i++) {
-        if(areas->is_Good) {
-            cout<<right<<setw(5)<< areas->x0 << ',';
-            cout<<right<<setw(5)<< areas->y0 << ',';
-            cout<<' '<<left <<setw(4)<< areas->scorce <<endl;
-            c1 = c + ((areas->y0)*color.cols + areas->x0)*3;
-            for(int i=0;i<n;i++) {
-                for(int i=0;i<n;i++) {
-                    c1++;
-                    *c1 = (*c1)/4*2 + 255/4*2;
-                    c1++;
-                    c1++;
-                }
-                c1 += (color.cols-n)*3;
-            }
-        }
-        areas++;
-    }
 }

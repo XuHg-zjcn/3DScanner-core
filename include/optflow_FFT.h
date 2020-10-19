@@ -43,14 +43,13 @@ class optflow_FFT
         virtual ~optflow_FFT();
         void run(int n);
         void fill_data(Mat &in, int x0, int y0);
-        void calc_delta();
+        void calc_delta(bool sq2);
         void get_ifft_info(int w, double most, int SumNtop, ifft_quality *info);
         void WT(Mat *out, double div);
         void out_ifft(Mat *out);
         void copy_mul(Mat *out);
         void getGoodArea(Mat &img1, Mat &img2, int max_NArea, double min_scorce);
-        int NAreas;
-        AreaDesc *areas = nullptr;
+        void draw_mask(Mat &color);
 
     protected:
         int save();
@@ -66,6 +65,8 @@ class optflow_FFT
         fftw_complex *out2;
         fftw_complex *mul;
         double *ifft;
+        int NAreas;
+        AreaDesc *areas = nullptr;
 
         void complex_to_u8(fftw_complex *pIn, uint8_t *pOut, int len);
         void double_to_u8(double *pIn, uint8_t *pOut, int len);
