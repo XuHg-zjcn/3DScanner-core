@@ -14,10 +14,14 @@ include_directories(${FFTW3_DIR}/api)
 #project head files
 include_directories(include)
 
-add_executable(${PROJECT_NAME}
-               main.cpp
-               src/optflow_FFT.cpp
-               src/Hough.cpp
-               src/Hough_core.cpp)
-               
+#core
+add_library(${PROJECT_NAME} STATIC
+            src/optflow_FFT.cpp
+            src/Hough.cpp
+            src/Hough_core.cpp)
 target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS} fftw3 pthread)
+
+#test program
+add_executable(${PROJECT_NAME}_test
+               main.cpp)
+target_link_libraries(${PROJECT_NAME}_test ${OpenCV_LIBS} ${PROJECT_NAME} fftw3 pthread)
