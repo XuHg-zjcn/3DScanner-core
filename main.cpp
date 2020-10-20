@@ -29,7 +29,6 @@ int main(int argc, char *argv[])
         cout<<"Test image 'lena.jpg'(256x256) not found!\n";
         return -1;
     }
-    gray.create(img_color.size(), CV_8UC1);
     cvtColor(img_color, gray, CV_RGB2GRAY);
 
     runHough(gray, out);

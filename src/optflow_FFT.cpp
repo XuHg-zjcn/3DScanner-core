@@ -80,13 +80,13 @@ int optflow_FFT::save()
 
 void optflow_FFT::fill_data(Mat &mat_in, int x0, int y0)
 {
-    uint8_t *p_u8 = mat_in.ptr(y0, x0);
+    uint8_t *p_u8;
     double *p_db = crop_db;
-    for(int i=0;i<n;i++) {
+    for(int i=y0;i<y0+n;i++) {
+        p_u8 = mat_in.ptr(i, x0);
         for(int j=0;j<n;j++) {
-            *p_db++ = (double)(*p_u8++)/255;
+            *p_db++ = (*p_u8++)/255.0;
         }
-        p_u8 += mat_in.cols - n;
     }
 }
 
