@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10.2)
-project(3DScaner-core)
+project(3DScanner-core)
 add_definitions("-g -O3 -std=c++17 -lpthread")
 
 #OpenCV
@@ -19,9 +19,11 @@ add_library(${PROJECT_NAME} STATIC
             src/optflow_FFT.cpp
             src/Hough.cpp
             src/Hough_core.cpp)
-target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS} fftw3 pthread)
+target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS} fftw3)
 
 #test program
-add_executable(${PROJECT_NAME}_test
-               main.cpp)
-target_link_libraries(${PROJECT_NAME}_test ${OpenCV_LIBS} ${PROJECT_NAME} fftw3 pthread)
+if(NOT D3SCANNER_CORE_NOTEST)
+    add_executable(${PROJECT_NAME}_test
+                   main.cpp)
+    target_link_libraries(${PROJECT_NAME}_test ${OpenCV_LIBS} ${PROJECT_NAME} fftw3 pthread)
+endif(NOT D3SCANNER_CORE_NOTEST)

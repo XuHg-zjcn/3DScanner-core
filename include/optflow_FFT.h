@@ -5,7 +5,7 @@
 #include <opencv2/core/core.hpp>
 using namespace cv;
 
-#ifdef USE_SINGLE
+#if defined(D3SCANNER_CORE_USE_SINGLE) && defined(WANT_SINGLE)
 #define fftw_malloc fftwf_malloc
 #define fftw_free fftwf_free
 #define fftw_destroy_plan fftwf_destroy_plan

@@ -1,3 +1,4 @@
+#define WANT_SINGLE
 #include "optflow_FFT.h"
 #include <opencv2/core/core.hpp>
 #include <fftw3.h>

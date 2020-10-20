@@ -60,7 +60,7 @@ inline void Hough_core::get_near4(xy<uint32_t> &pH16, uint64_t *pNear4) {
 }
 //N<256
 inline uint32_t Hough_core::line_sum(point_u32 &start, xy<int> &delta, uint32_t N) {
-    point_u32 point = point_u32(start);
+    point_u32 point(start);
     H16_BL8 xy_part;
     uint32_t sum_value=0;
     uint8_t *pPixel;
@@ -94,7 +94,7 @@ void Hough_core::lines_search() {
     timespec ts0{}, ts1{};
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts0);
     float rad = paras.rads.start;           //i为0时的rad
-    point_u32 point = point_u32(0U, 0U);      //无用
+    point_u32 point(0U, 0U);      //无用
     xy<int> delta_point{0,0};               //线上点的间距
     xy<int> delta_line{0,0};                //平行线的间距
     for(uint32_t i=paras.out_area.y.a; i<paras.out_area.y.b; i++) {
