@@ -68,7 +68,9 @@ int optflow_FFT::save()
     FILE *fp;
     fp = fopen("wisdom.fftw", "w");
     if(fp == nullptr){
+#ifndef D3SCANNER_CORE_NOTEST
         cout<<"file open faild"<<endl;
+#endif
         return 1;
     }
     fftw_export_wisdom_to_file(fp);
@@ -78,13 +80,14 @@ int optflow_FFT::save()
 
 void optflow_FFT::fill_data(Mat &mat_in, int x0, int y0)
 {
-    uint8_t *ptr_row;
-    double *ptr_db=crop_db;
+    uint8_t *p_u8;
+    double *p_db=crop_db;
+    p_u8 = mat_in.ptr(y0, x0);
     for(int i=y0;i<y0+n;i++) {
-        ptr_row = mat_in.ptr(i, x0);
         for(int j=0;j<n;j++) {
-            *ptr_db++=(*ptr_row++)/255.0;
+            *p_db++ = (double)(*p_u8++)/255;
         }
+        p_db += mat_in.cols - n;
     }
 }
 
@@ -285,11 +288,11 @@ void optflow_FFT::getGoodArea(Mat &img1, Mat &img2, int max_NArea, double min_sc
     ifft_quality info;
     AreaDesc* pAreas;
 
-    assert(max_NArea <= NRow*NCol);
     NAreas = NRow*NCol;
+    assert(max_NArea <= NAreas);
 
     if(areas == nullptr) {
-        areas = (AreaDesc*)malloc(sizeof(AreaDesc)*NRow*NCol);
+        areas = (AreaDesc*)malloc(sizeof(AreaDesc)*NAreas);
     }
     pAreas = areas;
     for(int i=0;i<NRow;i++) {
@@ -330,9 +333,11 @@ void optflow_FFT::draw_mask(Mat &color)
     uint8_t *c1;
     for(int i=0;i<NAreas;i++) {                              //i:nth of Area
         if(areas->is_Good) {
+#ifndef D3SCANNER_CORE_NOTEST
             cout<<right<<setw(5)<< areas->x0 << ',';
             cout<<right<<setw(5)<< areas->y0 << ',';
             cout<<' '<<left <<setw(4)<< areas->scorce <<endl;
+#endif
             c1 = c + ((areas->y0)*color.cols + areas->x0)*3; //first pixel of Area
             for(int j=0;j<n;j++) {                           //j:row in Area
                 for(int k=0;k<n;k++) {                       //K:row in Area
