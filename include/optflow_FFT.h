@@ -5,7 +5,7 @@
 #include <opencv2/core/core.hpp>
 using namespace cv;
 
-#if defined(D3SCANNER_CORE_USE_SINGLE) && defined(WANT_SINGLE)
+#ifdef D3SCANNER_CORE_USE_SINGLE
 #define fftw_malloc fftwf_malloc
 #define fftw_free fftwf_free
 #define fftw_destroy_plan fftwf_destroy_plan
@@ -19,7 +19,7 @@ using namespace cv;
 
 #define fftw_complex fftwf_complex
 #define double float
-#endif // defined
+#endif
 
 typedef struct {
     double SNR; //Signal(Enegry) / Noise(Power), Signal equal Noise Npixel
@@ -41,7 +41,7 @@ class optflow_FFT
     public:
         optflow_FFT(int n);
         virtual ~optflow_FFT();
-        void run(int n);
+        void run(int i);
         void fill_data(Mat &in, int x0, int y0);
         void calc_delta(bool sq2);
         void get_ifft_info(int w, double most, int SumNtop, ifft_quality *info);
@@ -52,8 +52,8 @@ class optflow_FFT
         void draw_mask(Mat &color);
 
     protected:
-        int save();
-        int load();
+        static int save();
+        //int load();
 
     private:
         int n=0;
@@ -68,11 +68,12 @@ class optflow_FFT
         int NAreas;
         AreaDesc *areas = nullptr;
 
-        void complex_to_u8(fftw_complex *pIn, uint8_t *pOut, int len);
-        void double_to_u8(double *pIn, uint8_t *pOut, int len);
+        static void complex_to_u8(fftw_complex *pIn, uint8_t *pOut, int len);
+        static void double_to_u8(double *pIn, uint8_t *pOut, int len);
         void xsum(double dx, double dy, fftw_complex &ret);
         double corner4_sum(double *results, const int w);
         double ifft_sum();
 };
 
+#undef double
 #endif // OPTFLOW_FFT_H

@@ -1,14 +1,17 @@
-#define WANT_SINGLE
 #include "optflow_FFT.h"
 #include <opencv2/core/core.hpp>
 #include <fftw3.h>
 #include <unistd.h>
-#include <time.h>
+#include <ctime>
 #include <iostream>
 #include <iomanip>
 #define _USE_MATH_DEFINES
 #include <cmath>
 using namespace std;
+
+#ifdef D3SCANNER_CORE_USE_SINGLE
+#define double float
+#endif
 
 optflow_FFT::optflow_FFT(int n)
 {
@@ -28,6 +31,7 @@ optflow_FFT::optflow_FFT(int n)
         p2 = fftw_plan_dft_r2c_2d(n, n, crop_db, out2, FFTW_ESTIMATE);
         p_ifft = fftw_plan_dft_c2r_2d(n, n, mul, ifft, FFTW_ESTIMATE);
     }
+    NAreas = 0;
 }
 
 optflow_FFT::~optflow_FFT()
@@ -42,9 +46,9 @@ optflow_FFT::~optflow_FFT()
     fftw_destroy_plan(p2);
 }
 
-void optflow_FFT::run(int n)
+void optflow_FFT::run(int i)
 {
-    switch(n) {
+    switch(i) {
         case 0:
             fftw_execute(p1);
             break;
@@ -63,7 +67,7 @@ int optflow_FFT::save()
 {
     FILE *fp;
     fp = fopen("wisdom.fftw", "w");
-    if(fp==NULL){
+    if(fp == nullptr){
         cout<<"file open faild"<<endl;
         return 1;
     }
@@ -98,7 +102,7 @@ void optflow_FFT::calc_delta(bool sq2)
     }
 }
 
-double line_sum(double *start, double *last, double *results)
+double line_sum(double *start, const double *last, double *results)
 {
     double sum = 0;
     double x2;
@@ -324,14 +328,14 @@ void optflow_FFT::draw_mask(Mat &color)
 {
     uint8_t *c = color.ptr();
     uint8_t *c1;
-    for(int i=0;i<NAreas;i++) {
+    for(int i=0;i<NAreas;i++) {                              //i:nth of Area
         if(areas->is_Good) {
             cout<<right<<setw(5)<< areas->x0 << ',';
             cout<<right<<setw(5)<< areas->y0 << ',';
             cout<<' '<<left <<setw(4)<< areas->scorce <<endl;
-            c1 = c + ((areas->y0)*color.cols + areas->x0)*3;
-            for(int i=0;i<n;i++) {
-                for(int i=0;i<n;i++) {
+            c1 = c + ((areas->y0)*color.cols + areas->x0)*3; //first pixel of Area
+            for(int j=0;j<n;j++) {                           //j:row in Area
+                for(int k=0;k<n;k++) {                       //K:row in Area
                     c1++;
                     *c1 = (*c1)/4*2 + 255/4*2;
                     c1++;
