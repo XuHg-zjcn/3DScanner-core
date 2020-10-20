@@ -31,7 +31,6 @@ optflow_FFT::optflow_FFT(int n)
         p2 = fftw_plan_dft_r2c_2d(n, n, crop_db, out2, FFTW_ESTIMATE);
         p_ifft = fftw_plan_dft_c2r_2d(n, n, mul, ifft, FFTW_ESTIMATE);
     }
-    NAreas = 0;
 }
 
 optflow_FFT::~optflow_FFT()
@@ -328,7 +327,6 @@ void optflow_FFT::getGoodArea(Mat &img1, Mat &img2, int max_NArea, double min_sc
 //@para color:color image to draw masks
 void optflow_FFT::draw_mask(Mat &color)
 {
-    uint8_t *c = color.ptr();
     uint8_t *c1;
     for(int i=0;i<NAreas;i++) {                              //i:nth of Area
         if(areas->is_Good) {
@@ -337,7 +335,7 @@ void optflow_FFT::draw_mask(Mat &color)
             cout<<right<<setw(5)<< areas->y0 << ',';
             cout<<' '<<left <<setw(4)<< areas->scorce <<endl;
 #endif
-            c1 = c + ((areas->y0)*color.cols + areas->x0)*3; //first pixel of Area
+            c1 = color.ptr(areas->y0, areas->x0);
             for(int j=0;j<n;j++) {                           //j:row in Area
                 for(int k=0;k<n;k++) {                       //K:row in Area
                     c1++;

@@ -65,7 +65,7 @@ class optflow_FFT
         fftw_complex *out2;
         fftw_complex *mul;
         double *ifft;
-        int NAreas;
+        int NAreas = 0;
         AreaDesc *areas = nullptr;
 
         static void complex_to_u8(fftw_complex *pIn, uint8_t *pOut, int len);
