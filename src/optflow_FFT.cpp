@@ -13,7 +13,7 @@ using namespace std;
 #define double float
 #endif
 
-optflow_FFT::optflow_FFT(int n)
+optflow_FFT::optflow_FFT(int n, int width, int height)
 {
     //ctor
     this->n = n;
@@ -31,6 +31,9 @@ optflow_FFT::optflow_FFT(int n)
         p2 = fftw_plan_dft_r2c_2d(n, n, crop_db, out2, FFTW_ESTIMATE);
         p_ifft = fftw_plan_dft_c2r_2d(n, n, mul, ifft, FFTW_ESTIMATE);
     }
+    NRow = height/n; //size of areas array
+    NCol = width/n; //per area is n*n pixel
+    areas = (AreaDesc*)malloc(sizeof(AreaDesc)*NRow*NCol);
 }
 
 optflow_FFT::~optflow_FFT()
@@ -150,31 +153,29 @@ double optflow_FFT::ifft_sum()
 //@para info: output info
 void optflow_FFT::get_ifft_info(int w, double most, int SumNtop, ifft_quality *info)
 {
-    double mAll = 0;          //mean all
-    double mWin = 0;          //mean in window
-    double Signal, Noise;
     double *wsort = new double[w*w*4];
     double wsort_partsum = 0;
     double SumTop = 0;
     int Npart = 0;
 
-    mWin = corner4_sum(wsort, w);
-    mAll = ifft_sum();
+    double mWin = corner4_sum(wsort, w); //mean in window
+    double mAll = ifft_sum();            //mean all
     //mWin = Signal+w2*Noise;
     //mAll = Signal+n2*Noise;
-    Signal = (n*n*mWin - w*w*4*mAll)/(n*n-w*w*4);
-    Noise  = (mAll - mWin)/(n*n-w*w*4);
+    double Signal = (n*n*mWin - w*w*4*mAll)/(n*n-w*w*4);
+    double Noise  = (mAll - mWin)/(n*n-w*w*4);
 
     sort(&wsort[0], &wsort[w*w], greater<double>());
-    while(wsort_partsum < mWin*most+Noise*Npart && Npart<w*w) {
+    while(wsort_partsum < mWin*most && Npart<w*w) {
         wsort_partsum += wsort[Npart];
+        wsort_partsum -= Noise;
         Npart++;
     }
 
     for(int i=0;i < SumNtop;i++) {
         SumTop += wsort[i];
     }
-
+    SumTop -= Noise*(double)SumNtop;
     info->SNR = Signal/Noise/(n*n);
     info->TopP = SumTop/Signal;
     info->Nmost = Npart;
@@ -279,19 +280,12 @@ bool operator> (const AreaDesc& x, const AreaDesc& y) {
 
 void optflow_FFT::getGoodArea(Mat &img1, Mat &img2, int max_NArea, double min_scorce)
 {
-    assert(img1.rows == img2.rows);
-    assert(img1.cols == img2.cols);
-    int NRow = img1.rows/n; //size of areas array
-    int NCol = img1.cols/n; //per area is n*n pixel
     ifft_quality info;
     AreaDesc* pAreas;
 
-    NAreas = NRow*NCol;
+    int NAreas = NRow*NCol;
     assert(max_NArea <= NAreas);
 
-    if(areas == nullptr) {
-        areas = (AreaDesc*)malloc(sizeof(AreaDesc)*NAreas);
-    }
     pAreas = areas;
     for(int i=0;i<NRow;i++) {
         for(int j=0;j<NCol;j++) {
@@ -328,7 +322,7 @@ void optflow_FFT::getGoodArea(Mat &img1, Mat &img2, int max_NArea, double min_sc
 void optflow_FFT::draw_mask(Mat &color)
 {
     uint8_t *c1;
-    for(int i=0;i<NAreas;i++) {                              //i:nth of Area
+    for(int i=0;i<NRow*NCol;i++) {                              //i:nth of Area
         if(areas->is_Good) {
 #ifndef D3SCANNER_CORE_NOTEST
             cout<<right<<setw(5)<< areas->x0 << ',';

@@ -39,7 +39,7 @@ typedef struct AreaDesc{
 class optflow_FFT
 {
     public:
-        optflow_FFT(int n);
+        optflow_FFT(int n, int width, int height);
         virtual ~optflow_FFT();
         void run(int i);
         void fill_data(Mat &in, int x0, int y0);
@@ -56,7 +56,7 @@ class optflow_FFT
         //int load();
 
     private:
-        int n=0;
+        int n;
         fftw_plan p1;
         fftw_plan p2;
         fftw_plan p_ifft;
@@ -65,8 +65,9 @@ class optflow_FFT
         fftw_complex *out2;
         fftw_complex *mul;
         double *ifft;
-        int NAreas = 0;
-        AreaDesc *areas = nullptr;
+        int NRow;
+        int NCol;
+        AreaDesc *areas;
 
         static void complex_to_u8(fftw_complex *pIn, uint8_t *pOut, int len);
         static void double_to_u8(double *pIn, uint8_t *pOut, int len);
