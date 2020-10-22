@@ -50,6 +50,8 @@ class optflow_FFT
         void copy_mul(Mat *out);
         void getGoodArea(Mat &img1, Mat &img2, int max_NArea, double min_scorce);
         void draw_mask(Mat &color);
+        void draw_area_rgb(Mat &color, int x0, int y0) const;
+        void draw_area_rgba(Mat &color, int x0, int y0) const;
 
     protected:
         static int save();

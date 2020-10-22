@@ -301,7 +301,7 @@ void optflow_FFT::getGoodArea(Mat &img1, Mat &img2, int max_NArea, double min_sc
             pAreas->y0 = i*n;
             pAreas->is_Good = false;
             pAreas->qua = info;
-            pAreas->scorce = info.SNR*info.TopP;
+            pAreas->scorce = info.TopP;
             pAreas++;
         }
     }
@@ -321,25 +321,54 @@ void optflow_FFT::getGoodArea(Mat &img1, Mat &img2, int max_NArea, double min_sc
 //@para color:color image to draw masks
 void optflow_FFT::draw_mask(Mat &color)
 {
-    uint8_t *c1;
+    AreaDesc *A=areas;
     for(int i=0;i<NRow*NCol;i++) {                              //i:nth of Area
-        if(areas->is_Good) {
+        if(A->is_Good) {
 #ifndef D3SCANNER_CORE_NOTEST
             cout<<right<<setw(5)<< areas->x0 << ',';
             cout<<right<<setw(5)<< areas->y0 << ',';
             cout<<' '<<left <<setw(4)<< areas->scorce <<endl;
 #endif
-            c1 = color.ptr(areas->y0, areas->x0);
-            for(int j=0;j<n;j++) {                           //j:row in Area
-                for(int k=0;k<n;k++) {                       //K:row in Area
-                    c1++;
-                    *c1 = (*c1)/4*2 + 255/4*2;
-                    c1++;
-                    c1++;
-                }
-                c1 += (color.cols-n)*3;
+            switch(color.channels()) {
+                case 3:
+                    draw_area_rgb(color, A->x0, A->y0);
+                    break;
+                case 4:
+                    draw_area_rgba(color, A->x0, A->y0);
+                    break;
+                default:
+                    break;
             }
         }
-        areas++;
+        A++;
+    }
+}
+
+void optflow_FFT::draw_area_rgb(Mat &color, int x0, int y0) const
+{
+    uint8_t *c1 = color.ptr(y0, x0);
+    for(int j=0;j<n;j++) {                           //j:row in Area
+        for(int k=0;k<n;k++) {                       //K:row in Area
+            c1++;
+            *c1 = (*c1)/4*2 + 255/4*2;
+            c1++;
+            c1++;
+        }
+        c1 += (color.cols-n)*3;
+    }
+}
+
+void optflow_FFT::draw_area_rgba(Mat &color, int x0, int y0) const
+{
+    uint8_t *c1 = color.ptr(y0, x0);
+    for(int j=0;j<n;j++) {                           //j:row in Area
+        for(int k=0;k<n;k++) {                       //K:row in Area
+            c1++;
+            *c1 = (*c1)/4*2 + 255/4*2;
+            c1++;
+            c1++;
+            c1++;
+        }
+        c1 += (color.cols-n)*4;
     }
 }
