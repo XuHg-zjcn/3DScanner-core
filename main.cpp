@@ -70,7 +70,7 @@ void runHough(Mat &gray, Mat &out)
 
 void runFFT(Mat &gray, Mat &show_wave, Mat &show_ifft)
 {
-    optflow_FFT *offt = new optflow_FFT(64);
+    optflow_FFT *offt = new optflow_FFT(64, gray.cols, gray.rows);
     ifft_quality info;
     offt->fill_data(gray, 40, 130);
     offt->run(0);
@@ -89,7 +89,7 @@ void runFFT(Mat &gray, Mat &show_wave, Mat &show_ifft)
 
 void runSNRTest(const Mat &gray, Mat &color, int n)
 {
-    optflow_FFT *offt = new optflow_FFT(n);
+    optflow_FFT *offt = new optflow_FFT(n, gray.cols, gray.rows);
     Rect rect1 = Rect(0, 0, 250, 250);
     Rect rect2 = Rect(2, 3, 250, 250);
     Mat crop1 = gray(rect1);

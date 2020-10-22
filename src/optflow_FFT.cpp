@@ -301,7 +301,7 @@ void optflow_FFT::getGoodArea(Mat &img1, Mat &img2, int max_NArea, double min_sc
             pAreas->y0 = i*n;
             pAreas->is_Good = false;
             pAreas->qua = info;
-            pAreas->scorce = info.TopP;
+            pAreas->scorce = info.SNR*info.TopP;
             pAreas++;
         }
     }
@@ -325,9 +325,9 @@ void optflow_FFT::draw_mask(Mat &color)
     for(int i=0;i<NRow*NCol;i++) {                              //i:nth of Area
         if(A->is_Good) {
 #ifndef D3SCANNER_CORE_NOTEST
-            cout<<right<<setw(5)<< areas->x0 << ',';
-            cout<<right<<setw(5)<< areas->y0 << ',';
-            cout<<' '<<left <<setw(4)<< areas->scorce <<endl;
+            cout<<right<<setw(5)<< A->x0 << ',';
+            cout<<right<<setw(5)<< A->y0 << ',';
+            cout<<' '<<left <<setw(4)<< A->scorce <<endl;
 #endif
             switch(color.channels()) {
                 case 3:
